@@ -1,8 +1,8 @@
+import { ThemedText } from '@/components/themed-text';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
 
 const { width, height } = Dimensions.get('window');
 

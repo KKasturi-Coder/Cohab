@@ -232,6 +232,121 @@ export const messages = {
   }
 }
 
+// House/User Status helpers
+export const userStatus = {
+  async hasHouse(userId: string) {
+    const { data, error } = await supabase
+      .from('roommates')
+      .select('room_id, status')
+      .eq('user_id', userId)
+      .eq('status', 'accepted')
+      .limit(1)
+    return { hasHouse: data && data.length > 0, data, error }
+  },
+
+  async getCurrentHouse(userId: string) {
+    const { data, error } = await supabase
+      .from('roommates')
+      .select(`
+        room_id,
+        rooms(name, address, rent_amount, currency)
+      `)
+      .eq('user_id', userId)
+      .eq('status', 'accepted')
+      .single()
+    return { data, error }
+  }
+}
+
+// House Creation and Joining helpers
+export const houses = {
+  async createHouse(houseData: {
+    name: string
+    address: string
+    rentAmount: number
+    currency?: string
+    createdBy: string
+  }) {
+    // Create the room first
+    const { data: roomData, error: roomError } = await supabase
+      .from('rooms')
+      .insert({
+        name: houseData.name,
+        address: houseData.address,
+        rent_amount: houseData.rentAmount,
+        currency: houseData.currency || 'USD',
+        created_by: houseData.createdBy,
+        is_available: true
+      })
+      .select()
+      .single()
+
+    if (roomError) return { data: null, error: roomError }
+
+    // Add the creator as a roommate
+    const { data: roommateData, error: roommateError } = await supabase
+      .from('roommates')
+      .insert({
+        room_id: roomData.id,
+        user_id: houseData.createdBy,
+        status: 'accepted'
+      })
+      .select()
+      .single()
+
+    if (roommateError) return { data: null, error: roommateError }
+
+    return { data: { room: roomData, roommate: roommateData }, error: null }
+  },
+
+  async joinHouse(houseCode: string, userId: string) {
+    // Find room by code (assuming code is stored in room name or a separate field)
+    // For now, we'll search by name containing the code
+    const { data: rooms, error: searchError } = await supabase
+      .from('rooms')
+      .select('id, name')
+      .ilike('name', `%${houseCode}%`)
+      .eq('is_available', true)
+      .limit(1)
+
+    if (searchError || !rooms || rooms.length === 0) {
+      return { data: null, error: new Error('House not found with that code') }
+    }
+
+    const room = rooms[0]
+
+    // Add user as roommate with pending status
+    const { data: roommateData, error: roommateError } = await supabase
+      .from('roommates')
+      .insert({
+        room_id: room.id,
+        user_id: userId,
+        status: 'pending'
+      })
+      .select()
+      .single()
+
+    if (roommateError) return { data: null, error: roommateError }
+
+    return { data: { room, roommate: roommateData }, error: null }
+  },
+
+  async generateHouseCode(roomId: string) {
+    // Generate a simple code (you can make this more sophisticated)
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase()
+    
+    // Update room with the code (you might want to add a code field to your schema)
+    const { data, error } = await supabase
+      .from('rooms')
+      .update({ name: `${code} - ${roomId}` }) // Temporary solution
+      .eq('id', roomId)
+      .select()
+      .single()
+
+    return { data: code, error }
+  }
+}
+
 // Real-time subscriptions
 export const subscribeToRoom = (roomId: string, callback: (payload: any) => void) => {
   return supabase
