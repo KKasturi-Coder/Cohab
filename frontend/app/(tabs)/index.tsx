@@ -8,7 +8,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const handleGetStarted = () => {
-    router.push('/(tabs)/explore'); // ensure this route exists
+    router.push('/test'); // ensure this route exists
   };
 
   return (
