@@ -37,24 +37,29 @@ const styles = StyleSheet.create({
   default: {
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: 'LexendDeca_400Regular',
   },
   defaultSemiBold: {
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: 'LexendDeca_600SemiBold',
     fontWeight: '600',
   },
   title: {
     fontSize: 32,
+    fontFamily: 'LexendDeca_700Bold',
     fontWeight: 'bold',
     lineHeight: 32,
   },
   subtitle: {
     fontSize: 20,
+    fontFamily: 'LexendDeca_700Bold',
     fontWeight: 'bold',
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
+    fontFamily: 'LexendDeca_400Regular',
     color: '#0a7ea4',
   },
 });
