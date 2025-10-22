@@ -1,14 +1,14 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ThemedText } from '@/components/themed-text';
 
 const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const handleGetStarted = () => {
-    router.push('/test'); // ensure this route exists
+    router.push('/signin'); // ensure this route exists
   };
 
   return (
@@ -18,12 +18,7 @@ export default function HomeScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      {/* Header */}
-      <SafeAreaView>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>Let&apos;s start</Text>
-        </View>
-      </SafeAreaView>
+      
 
       {/* Main Content */}
       <View style={styles.content}>
@@ -57,17 +52,17 @@ export default function HomeScreen() {
 
         {/* Welcome Text */}
         <View style={styles.textContainer}>
-          <Text style={styles.welcomeTitle}>Welcome to Cohab!</Text>
-          <Text style={styles.welcomeDescription}>
+          <ThemedText type="title" style={styles.welcomeTitle}>Welcome to Cohab!</ThemedText>
+          <ThemedText style={styles.welcomeDescription}>
             The all-in-one shared living manager designed to eliminate all friction between roommates.
-          </Text>
+          </ThemedText>
         </View>
       </View>
 
       {/* Get Started Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted} activeOpacity={0.8}>
-          <Text style={styles.buttonText}>Get Started</Text>
+          <ThemedText style={styles.buttonText}>Get Started</ThemedText>
         </TouchableOpacity>
       </View>
     </LinearGradient>
