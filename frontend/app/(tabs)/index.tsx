@@ -1,98 +1,214 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import React from 'react';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const handleGetStarted = () => {
+    router.push('/(tabs)/explore'); // ensure this route exists
+  };
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <LinearGradient
+      colors={['#F0F8E8', '#E8F4FD']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      {/* Header */}
+      <SafeAreaView>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Let&apos;s start</Text>
+        </View>
+      </SafeAreaView>
+
+      {/* Main Content */}
+      <View style={styles.content}>
+        {/* Illustration Placeholder */}
+        <View style={styles.illustrationContainer}>
+          <View style={styles.illustration}>
+            {/* Central Figure (properly centered) */}
+            <View style={styles.figure}>
+              <View style={styles.head} />
+              <View style={styles.body} />
+              <View style={styles.laptop} />
+              <View style={styles.mug} />
+            </View>
+
+            {/* Decorative Elements */}
+            <View style={styles.vase} />
+            <View style={styles.coffeeCup} />
+            <View style={styles.serverStack} />
+            <View style={styles.stopwatch} />
+            <View style={styles.pieChart} />
+            <View style={styles.calendar} />
+
+            {/* Scattered Dots */}
+            <View style={[styles.dot, styles.dot1]} />
+            <View style={[styles.dot, styles.dot2]} />
+            <View style={[styles.dot, styles.dot3]} />
+            <View style={[styles.dot, styles.dot4]} />
+            <View style={[styles.dot, styles.dot5]} />
+          </View>
+        </View>
+
+        {/* Welcome Text */}
+        <View style={styles.textContainer}>
+          <Text style={styles.welcomeTitle}>Welcome to Cohab!</Text>
+          <Text style={styles.welcomeDescription}>
+            The all-in-one shared living manager designed to eliminate all friction between roommates.
+          </Text>
+        </View>
+      </View>
+
+      {/* Get Started Button */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted} activeOpacity={0.8}>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: { flex: 1 },
+  header: { paddingTop: 8, paddingHorizontal: 20, paddingBottom: 12 },
+  headerText: { fontSize: 18, fontWeight: '600', color: '#4A4A4A' },
+
+  content: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    paddingHorizontal: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  illustrationContainer: {
+    width: width * 0.8,
+    height: height * 0.4,
+    marginBottom: 40,
+    position: 'relative',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  illustration: { flex: 1, position: 'relative' },
+
+  // Central Figure — fill parent and center contents
+  figure: {
     position: 'absolute',
+    top: 0, bottom: 0, left: 0, right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  head: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFD700',
+    marginBottom: 10,
+  },
+  body: {
+    width: 60,
+    height: 80,
+    backgroundColor: '#FFB6C1',
+    borderRadius: 30,
+    marginBottom: 10,
+  },
+  laptop: {
+    width: 80,
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    position: 'absolute',
+    top: 60,
+  },
+  mug: {
+    width: 20,
+    height: 25,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    position: 'absolute',
+    top: 20,
+    right: -15,
+  },
+
+  // Decorative Elements
+  vase: {
+    position: 'absolute',
+    top: '30%',
+    left: '10%',
+    width: 30,
+    height: 40,
+    backgroundColor: '#87CEEB',
+    borderRadius: 15,
+  },
+  coffeeCup: {
+    position: 'absolute',
+    top: '35%',
+    left: '5%',
+    width: 20,
+    height: 25,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+  },
+  serverStack: {
+    position: 'absolute',
+    top: '40%',
+    right: '15%',
+    width: 25,
+    height: 60,
+    backgroundColor: '#D3D3D3',
+    borderRadius: 5,
+  },
+  stopwatch: {
+    position: 'absolute',
+    top: '20%',
+    left: '20%',
+    width: 25,
+    height: 25,
+    backgroundColor: '#87CEEB',
+    borderRadius: 12.5,
+  },
+  pieChart: {
+    position: 'absolute',
+    top: '25%',
+    left: '5%',
+    width: 20,
+    height: 20,
+    backgroundColor: '#FFB6C1',
+    borderRadius: 10,
+  },
+  calendar: {
+    position: 'absolute',
+    top: '15%',
+    right: '25%',
+    width: 25,
+    height: 25,
+    backgroundColor: '#87CEEB',
+    borderRadius: 5,
+  },
+
+  // Scattered Dots
+  dot: { position: 'absolute', width: 8, height: 8, borderRadius: 4 },
+  dot1: { top: '10%', left: '30%', backgroundColor: '#FFB6C1' },
+  dot2: { top: '60%', left: '5%', backgroundColor: '#9370DB' },
+  dot3: { top: '70%', right: '20%', backgroundColor: '#87CEEB' },
+  dot4: { top: '20%', right: '10%', backgroundColor: '#FFD700' },
+  dot5: { top: '80%', left: '25%', backgroundColor: '#98FB98' },
+
+  textContainer: { alignItems: 'center', paddingHorizontal: 20 },
+  welcomeTitle: { fontSize: 28, fontWeight: 'bold', color: '#2C2C2C', marginBottom: 16, textAlign: 'center' },
+  welcomeDescription: { fontSize: 16, color: '#666666', textAlign: 'center', lineHeight: 24 },
+
+  buttonContainer: { paddingHorizontal: 20, paddingBottom: 40 },
+  getStartedButton: {
+    backgroundColor: '#000000',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
 });
