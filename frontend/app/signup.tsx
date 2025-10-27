@@ -11,7 +11,7 @@ import { ThemedText } from '@/components/themed-text'
 
 const { height } = Dimensions.get('window')
 
-export default function App() {
+export default function SignUpScreen() {
   const [session, setSession] = useState<Session | null>(null)
   const [isCheckingHouse, setIsCheckingHouse] = useState(false)
 
@@ -80,12 +80,21 @@ export default function App() {
         ) : (
           <View style={styles.authContainer}>
             <View style={styles.header}>
-              <ThemedText type="title" style={styles.title}>Welcome Back!</ThemedText>
+              <ThemedText type="title" style={styles.title}>Join Cohab!</ThemedText>
               <ThemedText style={styles.subtitle}>
-                Sign in to manage your shared living space.
+                Create your account and start managing your shared living space.
               </ThemedText>
             </View>
-            <Auth mode="signin" />
+            <Auth mode="signup" />
+            <TouchableOpacity 
+              style={styles.linkContainer}
+              onPress={() => router.push('/signin')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.linkText}>
+                Already have an account? <Text style={styles.linkTextBold}>Sign in</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -101,7 +110,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingTop: 60,
   },
   authContainer: {
     width: '100%',
@@ -134,5 +142,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#666666',
+  },
+  linkContainer: {
+    alignItems: 'center',
+    marginTop: 24,
+    paddingVertical: 8,
+  },
+  linkText: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  linkTextBold: {
+    fontWeight: '600',
+    color: '#000000',
   },
 })

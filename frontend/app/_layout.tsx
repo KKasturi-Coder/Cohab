@@ -4,6 +4,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { TouchableOpacity, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -40,8 +42,38 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={theme}>
-      <Stack>
+      <Stack screenOptions={{ headerBackTitle: '' }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="signup" 
+          options={{ 
+            headerShown: false,
+            animation: 'none'
+          }} 
+        />
+        <Stack.Screen 
+          name="signin" 
+          options={({ navigation }) => ({ 
+            headerShown: true,
+            title: '',
+            headerTransparent: true,
+            headerTintColor: '#000000',
+            presentation: 'card',
+            headerLeft: () => (
+              <TouchableOpacity 
+                onPress={() => navigation.goBack()}
+                style={{ 
+                  paddingLeft: Platform.OS === 'ios' ? 8 : 16,
+                  height: 44,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <Ionicons name="chevron-back" size={28} color="#000000" />
+              </TouchableOpacity>
+            )
+          })} 
+        />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />
