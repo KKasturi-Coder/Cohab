@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import Animated, { FadeInDown, FadeInUp, useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -14,6 +15,14 @@ export default function ProfileScreen() {
   const [userName, setUserName] = useState('');
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
+  
+  const avatarScale = useSharedValue(0);
+  
+  const animatedAvatarStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: avatarScale.value }],
+    };
+  });
 
   useEffect(() => {
     // Check authentication first
@@ -32,6 +41,12 @@ export default function ProfileScreen() {
       }
       
       setIsCheckingAuth(false);
+      
+      // Trigger avatar animation
+      avatarScale.value = withSpring(1, {
+        duration: 800,
+        dampingRatio: 0.6,
+      });
     };
 
     checkAuth();
@@ -93,37 +108,39 @@ export default function ProfileScreen() {
     <LinearGradient colors={['#F0F8E8', '#E8F4FD']} style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <Animated.View entering={FadeInUp.delay(100).duration(600)} style={styles.header}>
           <ThemedText type="title" style={styles.headerTitle}>Profile</ThemedText>
-        </View>
+        </Animated.View>
 
         {/* User Info Card */}
-        <View style={styles.userCard}>
+        <Animated.View entering={FadeInDown.delay(200).duration(800)} style={styles.userCard}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
+            <Animated.View style={[styles.avatar, animatedAvatarStyle]}>
               <IconSymbol name="person.fill" size={40} color="#666666" />
-            </View>
+            </Animated.View>
           </View>
           <ThemedText type="subtitle" style={styles.userName}>{userName}</ThemedText>
           <ThemedText style={styles.userEmail}>{userEmail}</ThemedText>
-        </View>
+        </Animated.View>
 
         {/* Logout Button */}
-        <TouchableOpacity 
-          style={[styles.logoutButton, loading && styles.logoutButtonDisabled]} 
-          onPress={handleLogout}
-          disabled={loading}
-          activeOpacity={0.8}
-        >
-          {loading ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <>
-              <IconSymbol name="arrow.right.square.fill" size={20} color="#FFFFFF" />
-              <ThemedText style={styles.logoutButtonText}>Sign Out</ThemedText>
-            </>
-          )}
-        </TouchableOpacity>
+        <Animated.View entering={FadeInDown.delay(400).duration(600)}>
+          <TouchableOpacity 
+            style={[styles.logoutButton, loading && styles.logoutButtonDisabled]} 
+            onPress={handleLogout}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <IconSymbol name="arrow.right.square.fill" size={20} color="#FFFFFF" />
+                <ThemedText style={styles.logoutButtonText}>Sign Out</ThemedText>
+              </>
+            )}
+          </TouchableOpacity>
+        </Animated.View>
       </ScrollView>
     </LinearGradient>
   );
