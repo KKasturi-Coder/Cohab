@@ -103,3 +103,8 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+.vscode/
+.venv
+*.py[cod]
+__pycache__/
+*$py.class
