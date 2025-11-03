@@ -18,14 +18,13 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      if (session?.user) {
-        checkUserHouseStatus(session.user.id)
-      }
+      // Don't auto-check house status on initial load - wait for sign in
     })
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
-      if (session?.user) {
+      // Check house status after sign in
+      if (session?.user && event === 'SIGNED_IN') {
         checkUserHouseStatus(session.user.id)
       }
     })
@@ -45,7 +44,8 @@ export default function App() {
       }
     } catch (error) {
       console.error('Error checking house status:', error)
-      // If error, still show account page
+      // If error, redirect to join-house to let them set up
+      router.replace('/join-house')
     } finally {
       setIsCheckingHouse(false)
     }

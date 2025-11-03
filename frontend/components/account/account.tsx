@@ -47,42 +47,42 @@ export default function Account({ session }: { session: Session }) {
     }
   }
 
-  async function updateProfile({
-    username,
-    website,
-    avatar_url,
-  }: {
-    username: string
-    website: string
-    avatar_url: string
-  }) {
-    try {
-      setLoading(true)
-      if (!session?.user) throw new Error('No user on the session!')
+//   async function updateProfile({
+//     username,
+//     website,
+//     avatar_url,
+//   }: {
+//     username: string
+//     website: string
+//     avatar_url: string
+//   }) {
+//     try {
+//       setLoading(true)
+//       if (!session?.user) throw new Error('No user on the session!')
 
-      const updates = {
-        id: session?.user.id,
-        username,
-        website,
-        avatar_url,
-        updated_at: new Date(),
-      }
+//       const updates = {
+//         id: session?.user.id,
+//         username,
+//         website,
+//         avatar_url,
+//         updated_at: new Date(),
+//       }
 
-      const { error } = await supabase.from('profiles').upsert(updates)
+//       const { error } = await supabase.from('profiles').upsert(updates)
 
-      if (error) {
-        throw error
-      }
+//       if (error) {
+//         throw error
+//       }
       
-      Alert.alert('Success', 'Profile updated successfully!')
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
+//       Alert.alert('Success', 'Profile updated successfully!')
+//     } catch (error) {
+//       if (error instanceof Error) {
+//         Alert.alert(error.message)
+//       }
+//     } finally {
+//       setLoading(false)
+//     }
+//   }
 
   return (
     <View style={styles.container}>
@@ -99,7 +99,7 @@ export default function Account({ session }: { session: Session }) {
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Button
           title={loading ? 'Loading ...' : 'Update'}
-          onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
+          //onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
           disabled={loading}
         />
       </View>

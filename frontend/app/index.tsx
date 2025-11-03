@@ -1,15 +1,60 @@
 import { ThemedText } from '@/components/themed-text';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { supabase } from '@/lib/supabase';
+import { ActivityIndicator } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-export default function HomeScreen() {
+export default function WelcomeScreen() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        // User is logged in, redirect to dashboard
+        router.replace('/(tabs)/dashboard');
+      } else {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        router.replace('/(tabs)/dashboard');
+      } else {
+        setIsCheckingAuth(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleGetStarted = () => {
     router.push('/signup');
   };
+
+  if (isCheckingAuth) {
+    return (
+      <LinearGradient
+        colors={['#F0F8E8', '#E8F4FD']}
+        style={styles.container}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
+      </LinearGradient>
+    );
+  }
 
   return (
     <LinearGradient
@@ -18,8 +63,6 @@ export default function HomeScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      
-
       {/* Main Content */}
       <View style={styles.content}>
         {/* Illustration Placeholder */}
@@ -71,9 +114,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingTop: 8, paddingHorizontal: 20, paddingBottom: 12 },
-  headerText: { fontSize: 18, fontWeight: '600', color: '#4A4A4A' },
-
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   content: {
     flex: 1,
     justifyContent: 'center',
@@ -207,3 +252,4 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
 });
+
