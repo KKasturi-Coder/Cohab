@@ -4,6 +4,7 @@ from typing import List
 from ....types import Notification
 from app.graphql.info import Info
 from app.graphql.utils.field_selectors import get_requested_db_fields
+from app.graphql.utils.parsers import parse_datetime_fields
 
 
 @strawberry.field
@@ -26,4 +27,4 @@ async def my_notifications(
     
     result = await query.order("created_at", desc=True).limit(limit).execute()
     
-    return [Notification(**notification) for notification in result.data]
+    return [Notification(**parse_datetime_fields(notification, "created_at")) for notification in result.data]

@@ -4,6 +4,7 @@ from typing import Optional
 from ....types import Expense
 from ..inputs import UpdateExpenseInput
 from app.graphql.info import Info
+from app.graphql.utils.parsers import parse_datetime_fields, datetime_to_iso
 
 
 @strawberry.mutation
@@ -37,7 +38,7 @@ async def update_expense(
     if input.category is not None:
         update_data["category"] = input.category
     if input.due_date is not None:
-        update_data["due_date"] = input.due_date
+        update_data["due_date"] = datetime_to_iso(input.due_date)
     
     if not update_data:
         raise Exception("No fields to update")
@@ -46,5 +47,6 @@ async def update_expense(
     result = await context.supabase.table("expenses").update(update_data).eq("id", expense_id).execute()
     
     if result.data:
-        return Expense(**result.data[0])
+        expense_data = parse_datetime_fields(result.data[0], "created_at", "due_date")
+        return Expense(**expense_data)
     return None

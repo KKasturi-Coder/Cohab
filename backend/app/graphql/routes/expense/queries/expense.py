@@ -4,6 +4,7 @@ from typing import Optional
 from ....types import Expense
 from app.graphql.info import Info
 from app.graphql.utils.field_selectors import get_requested_db_fields
+from app.graphql.utils.parsers import parse_datetime_fields
 
 
 @strawberry.field
@@ -15,5 +16,6 @@ async def expense(info: Info, expense_id: str) -> Optional[Expense]:
     result = await context.supabase.table("expenses").select(fields).eq("id", expense_id).execute()
     
     if result.data:
-        return Expense(**result.data[0])
+        expense_data = parse_datetime_fields(result.data[0], "created_at", "due_date")
+        return Expense(**expense_data)
     return None

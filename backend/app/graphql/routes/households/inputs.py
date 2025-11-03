@@ -4,7 +4,7 @@ from typing import Optional, List
 
 
 @strawberry.input
-class CreateRoomInput:
+class CreateHouseholdInput:
     """Input for creating a new household"""
     
     name: str
@@ -18,7 +18,7 @@ class CreateRoomInput:
 
 
 @strawberry.input
-class UpdateRoomInput:
+class UpdateHouseholdInput:
     """Input for updating a household"""
     
     name: Optional[str] = None

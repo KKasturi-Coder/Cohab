@@ -1,7 +1,8 @@
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { supabase } from '@/lib/supabase';
-import { auth, houses } from '@/lib/supabase-helpers';
+import { auth } from '@/lib/supabase-helpers';
+import { createHousehold, joinHousehold } from '@/lib/graphql-client';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -70,26 +71,29 @@ export default function JoinCreateHouseScreen() {
         return;
       }
 
-      // Create house
-      const { data, error } = await houses.createHouse({
+      // Create house using GraphQL mutation
+      const household = await createHousehold({
         name: houseName.trim(),
         address: address.trim(),
         rentAmount: parseFloat(rentAmount),
         currency: 'USD',
-        createdBy: user.id
       });
 
-      if (error) {
-        Alert.alert('Error', `Failed to create house: ${error.message}`);
+      if (!household) {
+        Alert.alert('Error', 'Failed to create house');
         return;
       }
 
-      Alert.alert('Success', 'House created successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)/dashboard')
-        }
-      ]);
+      Alert.alert(
+        'Success', 
+        `House created successfully! Your invite code is: ${household.inviteCode}`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/(tabs)/dashboard')
+          }
+        ]
+      );
 
     } catch (error: any) {
       Alert.alert('Error', `Failed to create house: ${error.message}`);
@@ -110,15 +114,15 @@ export default function JoinCreateHouseScreen() {
         return;
       }
 
-      // Join house
-      const { data, error } = await houses.joinHouse(houseCode.trim(), user.id);
+      // Join house using GraphQL mutation
+      const household = await joinHousehold(houseCode.trim().toUpperCase());
 
-      if (error) {
-        Alert.alert('Error', `Failed to join house: ${error.message}`);
+      if (!household) {
+        Alert.alert('Error', 'Failed to join house');
         return;
       }
 
-      Alert.alert('Success', 'House join request sent! Waiting for approval.', [
+      Alert.alert('Success', `Successfully joined ${household.name}!`, [
         {
           text: 'OK',
           onPress: () => router.replace('/(tabs)/dashboard')

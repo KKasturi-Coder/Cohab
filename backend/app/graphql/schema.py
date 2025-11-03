@@ -5,6 +5,7 @@ from .routes.profile import ProfileQueries, ProfileMutations
 from .routes.expense import ExpenseQueries, ExpenseMutations
 from .routes.message import MessageQueries, MessageMutations
 from .routes.notification import NotificationQueries, NotificationMutations
+from .routes.chore import ChoreQueries, ChoreMutations
 
 
 @strawberry.type
@@ -35,6 +36,11 @@ class Query:
     def notifications(self) -> NotificationQueries:
         """Notification-related queries and mutations"""
         return NotificationQueries()
+    
+    @strawberry.field
+    def chores(self) -> ChoreQueries:
+        """Chore-related queries and mutations"""
+        return ChoreQueries()
 
 @strawberry.type
 class Mutation:
@@ -64,6 +70,11 @@ class Mutation:
     def notifications(self) -> NotificationMutations:
         """Notification-related queries and mutations"""
         return NotificationMutations()
+    
+    @strawberry.field
+    def chores(self) -> ChoreMutations:
+        """Chore-related queries and mutations"""
+        return ChoreMutations()
 
 # Create the GraphQL schema
 schema = strawberry.Schema(query=Query, mutation=Mutation)

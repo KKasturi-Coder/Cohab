@@ -2,7 +2,9 @@
 from fastapi import FastAPI, Request
 from strawberry.fastapi import GraphQLRouter
 from dotenv import load_dotenv
+from jose import jwt, JWTError
 from app.supabase.utils.client import create_authenticated_client
+from app.supabase.config import supabase_config
 
 from app.graphql.schema import schema
 from app.graphql.context import CustomContext
@@ -20,15 +22,31 @@ app = FastAPI(
 # Context getter for GraphQL
 async def get_context(request: Request) -> CustomContext:
     """Get GraphQL context with dependencies"""
+    user_id = None
     try:
         auth_header = request.headers.get("Authorization", "")
         token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
+        
+        # Extract user_id from JWT payload
+        if token and supabase_config.jwt_secret:
+            try:
+                # Verify and decode JWT using Supabase secret
+                payload = jwt.decode(
+                    token,
+                    supabase_config.jwt_secret,
+                    algorithms=["HS256"],
+                    options={"verify_aud": False}  # Supabase doesn't use aud claim
+                )
+                user_id = payload.get("sub")  # 'sub' contains the user ID
+            except JWTError as e:
+                pass  # Invalid token signature or format, user_id remains None
+        
         supabase_client = await create_authenticated_client(token)
     except Exception as e:
         raise Exception(f"Failed to create authenticated client: {e}")
     return CustomContext(
         supabase=supabase_client,
-        user_id=None,
+        user_id=user_id,
     )
 
 

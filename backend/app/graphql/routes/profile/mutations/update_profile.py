@@ -4,6 +4,7 @@ from typing import Optional
 from ....types import Profile
 from ..inputs import UpdateProfileInput
 from app.graphql.info import Info
+from app.graphql.utils.parsers import parse_datetime_fields
 
 
 @strawberry.mutation
@@ -33,5 +34,6 @@ async def update_profile(
     result = await context.supabase.table("profiles").update(update_data).eq("id", context.user_id).execute()
     
     if result.data:
-        return Profile(**result.data[0])
+        profile_data = parse_datetime_fields(result.data[0], "created_at", "updated_at")
+        return Profile(**profile_data)
     return None

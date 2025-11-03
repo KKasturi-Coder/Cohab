@@ -4,6 +4,7 @@ from typing import Optional
 from ....types import Expense
 from ..inputs import CreateExpenseInput
 from app.graphql.info import Info
+from app.graphql.utils.parsers import parse_datetime_fields, datetime_to_iso
 
 
 @strawberry.mutation
@@ -18,7 +19,7 @@ async def create_expense(
         raise Exception("Not authenticated")
     
     # Verify user is in the household
-    roommate_result = await context.supabase.table("roommates").select("*").eq("user_id", context.user_id).eq("household_id", input.household_id).eq("status", "active").execute()
+    roommate_result = await context.supabase.table("roommates").select("*").eq("user_id", context.user_id).eq("household_id", input.household_id).eq("status", "accepted").execute()
     
     if not roommate_result.data:
         raise Exception("Not a member of this household")
@@ -32,7 +33,7 @@ async def create_expense(
         "currency": input.currency,
         "category": input.category,
         "paid_by": context.user_id,
-        "due_date": input.due_date,
+        "due_date": datetime_to_iso(input.due_date),
     }
     
     expense_result = await context.supabase.table("expenses").insert(expense_data).execute()
@@ -52,5 +53,6 @@ async def create_expense(
             }
             await context.supabase.table("expense_splits").insert(split_data).execute()
         
-        return Expense(**expense_result.data[0])
+        expense_data = parse_datetime_fields(expense_result.data[0], "created_at", "due_date")
+        return Expense(**expense_data)
     return None

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import { hasHousehold } from '@/lib/graphql-client';
 import { ActivityIndicator } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -16,8 +17,24 @@ export default function WelcomeScreen() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // User is logged in, redirect to dashboard
-        router.replace('/(tabs)/dashboard');
+        console.log('[index.tsx] User authenticated, checking household status...');
+        // User is logged in, check if they have a household
+        try {
+          const hasHouse = await hasHousehold();
+          console.log('[index.tsx] Has household:', hasHouse);
+          
+          if (hasHouse) {
+            console.log('[index.tsx] Redirecting to dashboard');
+            router.replace('/(tabs)/dashboard');
+          } else {
+            console.log('[index.tsx] No household, redirecting to join-house');
+            router.replace('/join-house');
+          }
+        } catch (error) {
+          console.error('[index.tsx] Error checking household:', error);
+          // On error, send to join-house to be safe
+          router.replace('/join-house');
+        }
       } else {
         setIsCheckingAuth(false);
       }
@@ -26,9 +43,20 @@ export default function WelcomeScreen() {
     checkAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        router.replace('/(tabs)/dashboard');
+        console.log('[index.tsx] Auth state changed, checking household status...');
+        try {
+          const hasHouse = await hasHousehold();
+          if (hasHouse) {
+            router.replace('/(tabs)/dashboard');
+          } else {
+            router.replace('/join-house');
+          }
+        } catch (error) {
+          console.error('[index.tsx] Error checking household:', error);
+          router.replace('/join-house');
+        }
       } else {
         setIsCheckingAuth(false);
       }

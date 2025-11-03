@@ -10,7 +10,7 @@ class Notification:
     """Notification type for user alerts"""
     
     id: Optional[strawberry.ID] = None
-    user_id: Optional[str] = None
+    user_id: Optional[strawberry.ID] = None
     title: Optional[str] = None
     message: Optional[str] = None
     type: Optional[str] = None

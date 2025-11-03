@@ -5,7 +5,7 @@ import { ActivityIndicator, Dimensions, StyleSheet, View, TouchableOpacity, Text
 import Account from '../components/account/account'
 import Auth from '../components/auth/auth'
 import { supabase } from '../lib/supabase'
-import { userStatus } from '../lib/supabase-helpers'
+import { hasHousehold } from '../lib/graphql-client'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ThemedText } from '@/components/themed-text'
 
@@ -18,13 +18,19 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      // Don't auto-check house status on initial load - wait for sign in
+      // Check house status on initial load if already signed in
+      if (session?.user) {
+        console.log('Initial session found, checking house status...')
+        checkUserHouseStatus(session.user.id)
+      }
     })
 
     supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id)
       setSession(session)
       // Check house status after sign in
       if (session?.user && event === 'SIGNED_IN') {
+        console.log('User signed in, checking house status...')
         checkUserHouseStatus(session.user.id)
       }
     })
@@ -32,19 +38,24 @@ export default function App() {
 
   const checkUserHouseStatus = async (userId: string) => {
     setIsCheckingHouse(true)
+    console.log('Checking house status for user:', userId)
     try {
-      const { hasHouse } = await userStatus.hasHouse(userId)
+      const hasHouse = await hasHousehold()
+      console.log('Has household:', hasHouse)
       
       if (hasHouse) {
         // User has a house, go to dashboard
+        console.log('Redirecting to dashboard')
         router.replace('/(tabs)/dashboard')
       } else {
         // User doesn't have a house, go to join house screen
+        console.log('No household found, redirecting to join-house')
         router.replace('/join-house')
       }
     } catch (error) {
       console.error('Error checking house status:', error)
       // If error, redirect to join-house to let them set up
+      console.log('Error occurred, redirecting to join-house')
       router.replace('/join-house')
     } finally {
       setIsCheckingHouse(false)

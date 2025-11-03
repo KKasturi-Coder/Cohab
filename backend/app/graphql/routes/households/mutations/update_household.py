@@ -1,8 +1,8 @@
 """Update household mutation resolver"""
 import strawberry
 from typing import Optional
-from ....types import Room
-from ..inputs import UpdateRoomInput
+from ....types import Household
+from ..inputs import UpdateHouseholdInput
 from app.graphql.info import Info
 
 
@@ -10,8 +10,8 @@ from app.graphql.info import Info
 async def update_household(
     info: Info,
     household_id: str,
-    input: UpdateRoomInput
-) -> Optional[Room]:
+    input: UpdateHouseholdInput
+) -> Optional[Household]:
     """Update a household"""
     context = info.context
     
@@ -52,5 +52,5 @@ async def update_household(
     result = await context.supabase.table("households").update(update_data).eq("id", household_id).execute()
     
     if result.data:
-        return Room(**result.data[0])
+        return Household(**result.data[0])
     return None

@@ -4,6 +4,7 @@ from typing import List
 from ....types import Message
 from app.graphql.info import Info
 from app.graphql.utils.field_selectors import get_requested_db_fields
+from app.graphql.utils.parsers import parse_datetime_fields
 
 
 @strawberry.field
@@ -19,7 +20,7 @@ async def household_messages(
     result = await context.supabase.table("messages").select(fields).eq("household_id", household_id).order("created_at", desc=True).limit(limit).execute()
     
     # Reverse to show oldest first
-    messages = [Message(**message) for message in result.data]
+    messages = [Message(**parse_datetime_fields(message, "created_at")) for message in result.data]
     messages.reverse()
     
     return messages

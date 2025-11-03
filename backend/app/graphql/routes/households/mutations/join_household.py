@@ -1,13 +1,14 @@
 """Join household mutation resolver"""
 import strawberry
 from app.graphql.info import Info
-
+from app.graphql.utils.parsers import parse_datetime_fields
+from ....types import Household
 
 @strawberry.mutation
 async def join_household(
     info: Info,
     invite_code: str
-) -> bool:
+) -> Household:
     """Join a household as a roommate"""
     context = info.context
     
@@ -15,7 +16,7 @@ async def join_household(
         raise Exception("Not authenticated")
     
     # Check if household exists and is available
-    household_result = await context.supabase.table("households").select("is_available").eq("invite_code", invite_code).execute()
+    household_result = await context.supabase.table("households").select("id, invite_code, is_available").eq("invite_code", invite_code).execute()
     
     if not household_result.data:
         raise Exception("Room not found")
@@ -33,8 +34,9 @@ async def join_household(
     roommate_data = {
         "user_id": context.user_id,
         "household_id": household_result.data[0]["id"],
-        "status": "active",
+        "status": "accepted",
     }
     await context.supabase.table("roommates").insert(roommate_data).execute()
     
-    return True
+    household_data = parse_datetime_fields(household_result.data[0], "created_at", "updated_at")
+    return Household(**household_data)

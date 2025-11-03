@@ -1,24 +1,25 @@
 """Create household mutation resolver"""
 import strawberry
 from typing import Optional
-from ....types import Room
-from ..inputs import CreateRoomInput
+from ....types import Household
+from ..inputs import CreateHouseholdInput
 from app.graphql.info import Info
+from app.graphql.utils.parsers import parse_datetime_fields
 import random
 import string
 
 @strawberry.mutation
 async def create_household(
     info: Info,
-    input: CreateRoomInput
-) -> Optional[Room]:
-    """Create a new household"""
+    input: CreateHouseholdInput
+) -> Optional[Household]:
     context = info.context
-    
     if not context.user_id:
         raise Exception("Not authenticated")
-    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    # Create household
+
+    alphabet = string.ascii_uppercase + string.digits
+    code = "".join(random.choices(alphabet, k=8))
+
     household_data = {
         "name": input.name,
         "description": input.description,
@@ -32,17 +33,17 @@ async def create_household(
         "created_by": context.user_id,
         "invite_code": code,
     }
-    
+
     result = await context.supabase.table("households").insert(household_data).execute()
-    
-    if result.data:
-        # Add creator as a roommate
-        roommate_data = {
-            "user_id": context.user_id,
-            "household_id": result.data[0]["id"],
-            "status": "active",
-        }
-        await context.supabase.table("roommates").insert(roommate_data).execute()
-        
-        return Room(**result.data[0])
-    return None
+    if not result.data:
+        return None
+
+    roommate_data = {
+        "user_id": context.user_id,
+        "household_id": result.data[0]["id"],
+        "status": "accepted",
+    }
+    await context.supabase.table("roommates").insert(roommate_data).execute()
+
+    household = parse_datetime_fields(result.data[0], "created_at", "updated_at")
+    return Household(**household)

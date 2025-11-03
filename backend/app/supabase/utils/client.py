@@ -32,7 +32,6 @@ async def create_authenticated_client(token: str) -> AsyncClient:
     Returns:
         AsyncClient: Authenticated Supabase client instance
     """
-    print(f"DEBUG: Token present: {bool(token)}")
     
     if not token or token == "":
         return await create_async_client(supabase_config.url, supabase_config.anon_key)

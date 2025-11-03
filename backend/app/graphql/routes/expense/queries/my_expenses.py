@@ -4,6 +4,7 @@ from typing import List
 from ....types import Expense
 from app.graphql.info import Info
 from app.graphql.utils.field_selectors import get_requested_db_fields
+from app.graphql.utils.parsers import parse_datetime_fields
 
 
 @strawberry.field
@@ -26,4 +27,4 @@ async def my_expenses(info: Info) -> List[Expense]:
     fields = get_requested_db_fields(Expense, info)
     result = await context.supabase.table("expenses").select(fields).in_("id", expense_ids).order("created_at", desc=True).execute()
     
-    return [Expense(**expense) for expense in result.data]
+    return [Expense(**parse_datetime_fields(expense, "created_at", "due_date")) for expense in result.data]

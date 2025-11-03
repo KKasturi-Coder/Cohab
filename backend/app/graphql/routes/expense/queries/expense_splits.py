@@ -4,6 +4,7 @@ from typing import List
 from ....types import ExpenseSplit
 from app.graphql.info import Info
 from app.graphql.utils.field_selectors import get_requested_db_fields
+from app.graphql.utils.parsers import parse_datetime_fields
 
 
 @strawberry.field
@@ -17,4 +18,4 @@ async def expense_splits(
     fields = get_requested_db_fields(ExpenseSplit, info)
     result = await context.supabase.table("expense_splits").select(fields).eq("expense_id", expense_id).execute()
     
-    return [ExpenseSplit(**split) for split in result.data]
+    return [ExpenseSplit(**parse_datetime_fields(split, "paid_at")) for split in result.data]
