@@ -1,13 +1,13 @@
+import { ThemedText } from '@/components/themed-text'
 import { Session } from '@supabase/supabase-js'
+import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, Dimensions, StyleSheet, View, TouchableOpacity, Text } from 'react-native'
+import { ActivityIndicator, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import Account from '../components/account/account'
 import Auth from '../components/auth/auth'
 import { supabase } from '../lib/supabase'
 import { userStatus } from '../lib/supabase-helpers'
-import { LinearGradient } from 'expo-linear-gradient'
-import { ThemedText } from '@/components/themed-text'
 
 const { height } = Dimensions.get('window')
 
@@ -18,14 +18,13 @@ export default function SignUpScreen() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      if (session?.user) {
-        checkUserHouseStatus(session.user.id)
-      }
+      // Don't auto-check house status on initial load
     })
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
-      if (session?.user) {
+      // Check house status after signin (signup also triggers SIGNED_IN event)
+      if (session?.user && event === 'SIGNED_IN') {
         checkUserHouseStatus(session.user.id)
       }
     })
@@ -45,7 +44,8 @@ export default function SignUpScreen() {
       }
     } catch (error) {
       console.error('Error checking house status:', error)
-      // If error, still show account page
+      // If error, redirect to join-house to let them set up
+      router.replace('/join-house')
     } finally {
       setIsCheckingHouse(false)
     }

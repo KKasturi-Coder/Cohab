@@ -2,8 +2,10 @@ import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { auth, userStatus } from '@/lib/supabase-helpers';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -12,9 +14,30 @@ export default function DashboardScreen() {
   const [currentDate, setCurrentDate] = useState('');
   const [houseInfo, setHouseInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    loadDashboardData();
+    // Check authentication first
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace('/index');
+        return;
+      }
+      setIsCheckingAuth(false);
+      loadDashboardData();
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.replace('/index');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadDashboardData = async () => {
@@ -49,10 +72,11 @@ export default function DashboardScreen() {
     }
   };
 
-  if (loading) {
+  if (isCheckingAuth || loading) {
     return (
       <LinearGradient colors={['#F0F8E8', '#E8F4FD']} style={styles.container}>
         <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000000" />
           <ThemedText>Loading dashboard...</ThemedText>
         </View>
       </LinearGradient>

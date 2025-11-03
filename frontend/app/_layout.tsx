@@ -14,7 +14,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  initialRouteName: 'index',
 };
 
 export default function RootLayout() {
@@ -43,6 +43,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={theme}>
       <Stack screenOptions={{ headerBackTitle: '' }}>
+        <Stack.Screen 
+          name="index" 
+          options={{ 
+            headerShown: false,
+            animation: 'none'
+          }} 
+        />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen 
           name="signup" 
@@ -73,6 +80,13 @@ export default function RootLayout() {
               </TouchableOpacity>
             )
           })} 
+        />
+        <Stack.Screen 
+          name="join-house" 
+          options={{ 
+            headerShown: false,
+            animation: 'none'
+          }} 
         />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
