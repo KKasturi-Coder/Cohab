@@ -113,13 +113,35 @@ export async function joinHousehold(inviteCode: string): Promise<Household | nul
 const LEAVE_HOUSEHOLD_MUTATION = `
   mutation LeaveHousehold($householdId: String!) {
     households {
-      leaveHousehold(householdId: $householdId)
+      leaveHousehold(householdId: $householdId) {
+        success
+        remainingHouseholds {
+          id
+          name
+          description
+          address
+          rentAmount
+          inviteCode
+          isAvailable
+          createdAt
+          updatedAt
+        }
+      }
     }
   }
 `;
 
-export async function leaveHousehold(householdId: string): Promise<boolean> {
-  const result = await graphqlRequest<{ households: { leaveHousehold: boolean } }>(
+interface LeaveHouseholdResult {
+  success: boolean;
+  remainingHouseholds: Household[];
+}
+
+export async function leaveHousehold(householdId: string): Promise<LeaveHouseholdResult> {
+  const result = await graphqlRequest<{ 
+    households: { 
+      leaveHousehold: LeaveHouseholdResult 
+    } 
+  }>(
     LEAVE_HOUSEHOLD_MUTATION,
     { householdId }
   );
@@ -128,5 +150,5 @@ export async function leaveHousehold(householdId: string): Promise<boolean> {
     throw new Error(result.errors[0]?.message || 'Failed to leave household');
   }
 
-  return result.data?.households?.leaveHousehold || false;
+  return result.data?.households?.leaveHousehold || { success: false, remainingHouseholds: [] };
 }

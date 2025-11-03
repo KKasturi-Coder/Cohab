@@ -105,12 +105,12 @@ export function AssignChoreModal({
               <View style={styles.roommatesList}>
                 {roommates.map((roommate) => (
                   <TouchableOpacity
-                    key={roommate.id}
+                    key={roommate.profile.id}
                     style={[
                       styles.roommateOption,
-                      selectedUserId === roommate.id && styles.roommateOptionSelected,
+                      selectedUserId === roommate.profile.id && styles.roommateOptionSelected,
                     ]}
-                    onPress={() => setSelectedUserId(roommate.id)}
+                    onPress={() => setSelectedUserId(roommate.profile.id)}
                     disabled={isLoading}
                   >
                     {roommate.profile.avatarUrl ? (
@@ -128,7 +128,7 @@ export function AssignChoreModal({
                     <Text style={styles.roommateName}>
                       {roommate.profile.fullName || 'Unknown'}
                     </Text>
-                    {selectedUserId === roommate.id && (
+                    {selectedUserId === roommate.profile.id && (
                       <IconSymbol name="checkmark.circle.fill" size={24} color="#007AFF" />
                     )}
                   </TouchableOpacity>

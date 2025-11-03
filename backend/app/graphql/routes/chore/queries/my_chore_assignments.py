@@ -34,19 +34,39 @@ async def my_chore_assignments(
     
     assignments = []
     for assignment in result.data:
-        chore_data = parse_datetime_fields(assignment["chores"], "created_at", "updated_at")
-        user_data = parse_datetime_fields(assignment["profiles"], "created_at", "updated_at")
-        assignment_data = parse_datetime_fields(assignment, "due_date", "completed_at", "created_at")
-        
-        assignments.append(ChoreAssignment(
-            id=assignment_data["id"],
-            chore=Chore(**chore_data),
-            user=Profile(**user_data),
-            due_date=assignment_data["due_date"],
-            is_complete=assignment_data["is_complete"],
-            completed_at=assignment_data.get("completed_at"),
-            proof_url=assignment_data.get("proof_url"),
-            created_at=assignment_data["created_at"]
-        ))
+        # Skip if chore data is missing
+        if not assignment.get("chores"):
+            continue
+            
+        # Skip if profile data is missing
+        if not assignment.get("profiles"):
+            continue
+            
+        try:
+            chore_data = parse_datetime_fields(assignment["chores"], "created_at", "updated_at")
+            user_data = parse_datetime_fields(assignment["profiles"], "created_at", "updated_at")
+            assignment_data = parse_datetime_fields(assignment, "due_date", "completed_at", "created_at")
+            
+            # Skip if required fields are missing
+            if not all(key in chore_data for key in ["id", "name", "household_id"]):
+                continue
+                
+            if not all(key in user_data for key in ["id", "first_name", "last_name"]):
+                continue
+            
+            assignments.append(ChoreAssignment(
+                id=assignment_data["id"],
+                chore=Chore(**chore_data),
+                user=Profile(**user_data),
+                due_date=assignment_data["due_date"],
+                is_complete=assignment_data["is_complete"],
+                completed_at=assignment_data.get("completed_at"),
+                proof_url=assignment_data.get("proof_url"),
+                created_at=assignment_data["created_at"]
+            ))
+        except Exception as e:
+            # Log the error but don't fail the entire request
+            print(f"Error processing chore assignment {assignment.get('id')}: {str(e)}")
+            continue
     
     return assignments

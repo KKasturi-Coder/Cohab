@@ -1,10 +1,10 @@
 """Update household mutation resolver"""
 import strawberry
-from typing import Optional
 from ....types import Household
+from dateutil import parser
 from ..inputs import UpdateHouseholdInput
 from app.graphql.info import Info
-
+from typing import Optional
 
 @strawberry.mutation
 async def update_household(
@@ -52,5 +52,13 @@ async def update_household(
     result = await context.supabase.table("households").update(update_data).eq("id", household_id).execute()
     
     if result.data:
-        return Household(**result.data[0])
+        household_data = result.data[0].copy()
+        # Convert string timestamps to datetime objects if they exist
+        if 'created_at' in household_data and household_data['created_at']:
+            if isinstance(household_data['created_at'], str):
+                household_data['created_at'] = parser.isoparse(household_data['created_at'])
+        if 'updated_at' in household_data and household_data['updated_at']:
+            if isinstance(household_data['updated_at'], str):
+                household_data['updated_at'] = parser.isoparse(household_data['updated_at'])
+        return Household(**household_data)
     return None

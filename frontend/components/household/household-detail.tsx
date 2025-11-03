@@ -65,9 +65,28 @@ export function HouseholdDetail({ household, onUpdate }: HouseholdDetailProps) {
           style: 'destructive',
           onPress: async () => {
             try {
-              await leaveHousehold(household.id);
-              Alert.alert('Success', 'You have left the household');
-              router.replace('/dashboard');
+              const result = await leaveHousehold(household.id);
+              if (result.success) {
+                if (result.remainingHouseholds.length === 0) {
+                  // No households left, redirect to join/create household
+                  Alert.alert(
+                    'Left Household',
+                    'You have left the household. Would you like to join or create a new one?',
+                    [
+                      {
+                        text: 'Yes, take me there',
+                        onPress: () => router.replace('/join-house'),
+                      },
+                    ]
+                  );
+                } else {
+                  // Still has other households, go to dashboard
+                  Alert.alert('Success', 'You have left the household');
+                  router.replace('/dashboard');
+                }
+              } else {
+                throw new Error('Failed to leave household');
+              }
             } catch (error) {
               Alert.alert('Error', error instanceof Error ? error.message : 'Failed to leave household');
             }

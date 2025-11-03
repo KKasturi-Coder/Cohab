@@ -18,6 +18,9 @@ async def create_chore_assignment(
     if not context.user_id:
         raise Exception("Not authenticated")
     
+    if not input.user_id:
+        raise Exception("No user ID provided for assignment")
+    
     # Get the chore to verify household membership
     chore_result = await context.supabase.table("chores").select("*").eq("id", input.chore_id).execute()
     
@@ -32,11 +35,33 @@ async def create_chore_assignment(
     if not roommate_result.data:
         raise Exception("Not a member of this household")
     
+    # Debug logging
+    print(f"[DEBUG] Checking if user {input.user_id} is a member of household {household_id}")
+    
     # Verify assigned user is in the household
-    assigned_roommate = await context.supabase.table("roommates").select("*").eq("user_id", input.user_id).eq("household_id", household_id).eq("status", "accepted").execute()
+    assigned_roommate = await context.supabase.table("roommates")\
+        .select("*") \
+        .eq("user_id", input.user_id) \
+        .eq("household_id", household_id) \
+        .eq("status", "accepted") \
+        .execute()
+    
+    print(f"[DEBUG] Assigned roommate query result: {assigned_roommate}")
     
     if not assigned_roommate.data:
-        raise Exception("Assigned user is not a member of this household")
+        # Check if the user exists at all
+        user_check = await context.supabase.table("profiles").select("id").eq("id", input.user_id).execute()
+        print(f"[DEBUG] User exists check: {user_check}")
+        
+        # Check if the user is a pending member
+        pending_check = await context.supabase.table("roommates") \
+            .select("*") \
+            .eq("user_id", input.user_id) \
+            .eq("household_id", household_id) \
+            .execute()
+        print(f"[DEBUG] Pending membership check: {pending_check}")
+        
+        raise Exception(f"Assigned user is not a member of this household. User ID: {input.user_id}, Household ID: {household_id}")
     
     # Create assignment
     assignment_data = {
