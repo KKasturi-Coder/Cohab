@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "DOCKER",
-    "dockerfile": "Dockerfile"
+    "dockerfile": "backend/Dockerfile"
   },
   "deploy": {
     "startCommand": "docker-compose up --build",
