@@ -4,7 +4,8 @@ from typing import Optional
 from ....types import Room
 from ..inputs import CreateRoomInput
 from app.graphql.info import Info
-
+import random
+import string
 
 @strawberry.mutation
 async def create_household(
@@ -16,7 +17,7 @@ async def create_household(
     
     if not context.user_id:
         raise Exception("Not authenticated")
-    
+    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     # Create household
     household_data = {
         "name": input.name,
@@ -29,6 +30,7 @@ async def create_household(
         "images": input.images,
         "is_available": True,
         "created_by": context.user_id,
+        "invite_code": code,
     }
     
     result = await context.supabase.table("households").insert(household_data).execute()

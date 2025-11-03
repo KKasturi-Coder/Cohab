@@ -8,15 +8,15 @@ from datetime import datetime
 class Expense:
     """Expense tracking type"""
     
-    id: strawberry.ID
-    household_id: str
-    title: str
+    id: Optional[strawberry.ID] = None
+    household_id: Optional[str] = None
+    title: Optional[str] = None
     description: Optional[str] = None
-    amount: float
+    amount: Optional[float] = None
     currency: Optional[str] = None
     category: Optional[str] = None
-    paid_by: str
-    created_at: datetime
+    paid_by: Optional[str] = None
+    created_at: Optional[datetime] = None
     due_date: Optional[datetime] = None
 
 
@@ -24,9 +24,9 @@ class Expense:
 class ExpenseSplit:
     """Expense split between roommates"""
     
-    id: strawberry.ID
-    expense_id: str
-    user_id: str
-    amount: float
-    is_paid: bool
+    id: Optional[strawberry.ID] = None
+    expense_id: Optional[str] = None
+    user_id: Optional[str] = None
+    amount: Optional[float] = None
+    is_paid: Optional[bool] = None
     paid_at: Optional[datetime] = None

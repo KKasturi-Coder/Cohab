@@ -9,14 +9,14 @@ import json
 class Notification:
     """Notification type for user alerts"""
     
-    id: strawberry.ID
-    user_id: str
-    title: str
-    message: str
-    type: str
-    is_read: bool
+    id: Optional[strawberry.ID] = None
+    user_id: Optional[str] = None
+    title: Optional[str] = None
+    message: Optional[str] = None
+    type: Optional[str] = None
+    is_read: Optional[bool] = None
     metadata: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
     
     @strawberry.field
     def parsed_metadata(self) -> Optional[str]:

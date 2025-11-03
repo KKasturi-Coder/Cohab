@@ -3,6 +3,7 @@ import strawberry
 from typing import List
 from ....types import Room
 from app.graphql.info import Info
+from app.graphql.utils.field_selectors import get_requested_db_fields
 
 
 @strawberry.field
@@ -22,6 +23,7 @@ async def my_households(info: Info) -> List[Room]:
     household_ids = [r["household_id"] for r in roommate_result.data]
     
     # Get the actual household data
-    result = await context.supabase.table("households").select("*").in_("id", household_ids).execute()
+    fields = get_requested_db_fields(Room, info)
+    result = await context.supabase.table("households").select(fields).in_("id", household_ids).execute()
     
     return [Room(**household) for household in result.data]

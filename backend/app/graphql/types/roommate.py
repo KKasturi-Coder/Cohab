@@ -8,9 +8,9 @@ from datetime import datetime
 class Roommate:
     """Roommate association type"""
     
-    id: strawberry.ID
-    user_id: str
-    household_id: str
-    status: str  # pending, active, left
+    id: Optional[strawberry.ID] = None
+    user_id: Optional[str] = None
+    household_id: Optional[str] = None
+    status: Optional[str] = None  # pending, active, left
     joined_at: Optional[datetime] = None
     left_at: Optional[datetime] = None

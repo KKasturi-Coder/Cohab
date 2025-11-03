@@ -8,10 +8,10 @@ from datetime import datetime
 class Profile:
     """User profile type"""
     
-    id: strawberry.ID
-    email: str
+    id: Optional[strawberry.ID] = None
+    email: Optional[str] = None
     full_name: Optional[str] = None
     avatar_url: Optional[str] = None
     bio: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

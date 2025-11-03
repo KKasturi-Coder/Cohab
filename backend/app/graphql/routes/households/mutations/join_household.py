@@ -6,7 +6,7 @@ from app.graphql.info import Info
 @strawberry.mutation
 async def join_household(
     info: Info,
-    household_id: str
+    invite_code: str
 ) -> bool:
     """Join a household as a roommate"""
     context = info.context
@@ -15,7 +15,7 @@ async def join_household(
         raise Exception("Not authenticated")
     
     # Check if household exists and is available
-    household_result = await context.supabase.table("households").select("is_available").eq("id", household_id).execute()
+    household_result = await context.supabase.table("households").select("is_available").eq("invite_code", invite_code).execute()
     
     if not household_result.data:
         raise Exception("Room not found")
@@ -24,7 +24,7 @@ async def join_household(
         raise Exception("Room is not available")
     
     # Check if already a roommate
-    existing = await context.supabase.table("roommates").select("*").eq("user_id", context.user_id).eq("household_id", household_id).execute()
+    existing = await context.supabase.table("roommates").select("*").eq("user_id", context.user_id).eq("household_id", household_result.data[0]["id"]).execute()
     
     if existing.data:
         raise Exception("Already a member of this household")
@@ -32,7 +32,7 @@ async def join_household(
     # Add as roommate
     roommate_data = {
         "user_id": context.user_id,
-        "household_id": household_id,
+        "household_id": household_result.data[0]["id"],
         "status": "active",
     }
     await context.supabase.table("roommates").insert(roommate_data).execute()

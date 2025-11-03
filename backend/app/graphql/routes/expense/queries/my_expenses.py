@@ -3,6 +3,7 @@ import strawberry
 from typing import List
 from ....types import Expense
 from app.graphql.info import Info
+from app.graphql.utils.field_selectors import get_requested_db_fields
 
 
 @strawberry.field
@@ -22,6 +23,7 @@ async def my_expenses(info: Info) -> List[Expense]:
     expense_ids = [s["expense_id"] for s in splits_result.data]
     
     # Get the actual expenses
-    result = await context.supabase.table("expenses").select("*").in_("id", expense_ids).order("created_at", desc=True).execute()
+    fields = get_requested_db_fields(Expense, info)
+    result = await context.supabase.table("expenses").select(fields).in_("id", expense_ids).order("created_at", desc=True).execute()
     
     return [Expense(**expense) for expense in result.data]

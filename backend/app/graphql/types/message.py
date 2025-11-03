@@ -9,13 +9,13 @@ import json
 class Message:
     """Message type for household chat"""
     
-    id: strawberry.ID
-    household_id: str
-    sender_id: str
-    content: str
+    id: Optional[strawberry.ID] = None
+    household_id: Optional[str] = None
+    sender_id: Optional[str] = None
+    content: Optional[str] = None
     message_type: Optional[str] = None
     metadata: Optional[str] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
     
     @strawberry.field
     def parsed_metadata(self) -> Optional[str]:
