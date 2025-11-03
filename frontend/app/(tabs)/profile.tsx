@@ -143,16 +143,16 @@ export default function ProfileScreen() {
 
   if (isCheckingAuth) {
     return (
-      <LinearGradient colors={['#F0F8E8', '#E8F4FD']} style={styles.container}>
+      <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#000000" />
+          <ActivityIndicator size="large" color="#FFC125" />
         </View>
       </LinearGradient>
     );
   }
 
   return (
-    <LinearGradient colors={['#F0F8E8', '#E8F4FD']} style={styles.container}>
+    <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <Animated.View entering={FadeInUp.delay(100).duration(600)} style={styles.header}>
@@ -163,7 +163,7 @@ export default function ProfileScreen() {
         <Animated.View entering={FadeInDown.delay(200).duration(800)} style={styles.userCard}>
           <View style={styles.avatarContainer}>
             <Animated.View style={[styles.avatar, animatedAvatarStyle]}>
-              <IconSymbol name="person.fill" size={40} color="#666666" />
+              <IconSymbol name="person.fill" size={40} color="#FFC125" />
             </Animated.View>
           </View>
           
@@ -228,7 +228,7 @@ export default function ProfileScreen() {
                 style={styles.editButton}
                 onPress={handleEditToggle}
               >
-                <IconSymbol name="pencil" size={16} color="#007AFF" />
+                <IconSymbol name="pencil" size={16} color="#FFC125" />
                 <ThemedText style={styles.editButtonText}>Edit Profile</ThemedText>
               </TouchableOpacity>
             </>
@@ -281,20 +281,22 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#2C2C2C',
+    color: '#FFC125',
   },
   userCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A1A1A',
     borderRadius: 16,
     padding: 24,
     marginHorizontal: 20,
     marginBottom: 24,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   avatarContainer: {
     marginBottom: 16,
@@ -303,25 +305,25 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
   },
   userName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2C2C2C',
+    color: '#FFC125',
     marginBottom: 8,
     textAlign: 'center',
   },
   userEmail: {
     fontSize: 16,
-    color: '#666666',
+    color: '#D4AF37',
     textAlign: 'center',
   },
   userBio: {
     fontSize: 14,
-    color: '#888888',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginTop: 12,
     paddingHorizontal: 16,
@@ -333,12 +335,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#F0F8FF',
+    backgroundColor: '#1E3A8A',
     borderRadius: 8,
     gap: 6,
+    borderWidth: 1,
+    borderColor: '#FFC125',
   },
   editButtonText: {
-    color: '#007AFF',
+    color: '#FFC125',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -349,18 +353,18 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2C2C2C',
+    color: '#FFC125',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#000000',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#2C2C2C',
+    color: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: 'rgba(255, 193, 37, 0.3)',
   },
   bioInput: {
     minHeight: 80,
@@ -380,15 +384,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButton: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.3)',
   },
   cancelButtonText: {
-    color: '#666666',
+    color: '#D4AF37',
     fontSize: 15,
     fontWeight: '600',
   },
   saveButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E3A8A',
+    borderWidth: 1,
+    borderColor: '#FFC125',
   },
   saveButtonDisabled: {
     opacity: 0.6,

@@ -1,29 +1,78 @@
 /**
  * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Black & Gold Elegance theme with dark blue accents.
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Majestic Black & Gold Elegance Palette
+const goldPrimary = '#FFC125';      // Rich golden yellow - more majestic
+const goldSecondary = '#D4AF37';    // Metallic gold - elegant
+const goldAccent = '#CD853F';       // Perennial gold - sophisticated
+const goldBright = '#FFD700';       // Bright gold for highlights
+const darkBlue = '#0F172A';         // Deep slate blue - regal
+const darkBlueLight = '#1E293B';    // Slate blue - elegant
+const darkBlueBright = '#1E3A8A';   // Royal blue - majestic
+const darkBlueDark = '#020617';    // Almost black blue - profound
+const blackPrimary = '#000000';     // Pure black
+const blackSecondary = '#0A0A0A';  // Deep black - more depth
+const blackTertiary = '#1A1A1A';   // Charcoal black
+const blackText = '#E5E5E5';       // Off-white text for contrast
+const white = '#FFFFFF';            // Pure white
+const grayLight = '#2A2A2A';       // Dark gray for subtle elements
+const grayMedium = '#8B8B8B';      // Medium gray - more visible on black
+
+const tintColorLight = goldPrimary;
+const tintColorDark = goldPrimary;
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#FFFFFF',
+    background: blackPrimary,
+    tint: goldPrimary,
+    icon: grayMedium,
+    tabIconDefault: grayMedium,
+    tabIconSelected: goldPrimary,
+    // Extended majestic palette
+    gold: goldPrimary,
+    goldSecondary: goldSecondary,
+    goldAccent: goldAccent,
+    goldBright: goldBright,
+    darkBlue: darkBlue,
+    darkBlueLight: darkBlueLight,
+    darkBlueBright: darkBlueBright,
+    darkBlueDark: darkBlueDark,
+    black: blackPrimary,
+    blackSecondary: blackSecondary,
+    blackTertiary: blackTertiary,
+    blackText: blackText,
+    white: white,
+    grayLight: grayLight,
+    grayMedium: grayMedium,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#FFFFFF',
+    background: blackPrimary,
+    tint: goldPrimary,
+    icon: grayMedium,
+    tabIconDefault: grayMedium,
+    tabIconSelected: goldPrimary,
+    // Extended majestic palette
+    gold: goldPrimary,
+    goldSecondary: goldSecondary,
+    goldAccent: goldAccent,
+    goldBright: goldBright,
+    darkBlue: darkBlue,
+    darkBlueLight: darkBlueLight,
+    darkBlueBright: darkBlueBright,
+    darkBlueDark: darkBlueDark,
+    black: blackPrimary,
+    blackSecondary: blackSecondary,
+    blackTertiary: blackTertiary,
+    blackText: blackText,
+    white: white,
+    grayLight: grayLight,
+    grayMedium: grayMedium,
   },
 };
 

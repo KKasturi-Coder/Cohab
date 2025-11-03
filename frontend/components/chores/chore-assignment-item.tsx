@@ -87,7 +87,7 @@ export function ChoreAssignmentItem({
         <View style={styles.choreInfo}>
           {assignment.isComplete && (
             <View style={styles.completeBadge}>
-              <IconSymbol name="checkmark.circle.fill" size={20} color="#34C759" />
+              <IconSymbol name="checkmark.circle.fill" size={20} color="#FFC125" />
             </View>
           )}
           <View style={styles.titleContainer}>
@@ -109,7 +109,7 @@ export function ChoreAssignmentItem({
 
         {!assignment.isComplete && (
           <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-            <IconSymbol name="xmark.circle.fill" size={20} color="#FF3B30" />
+            <IconSymbol name="xmark.circle.fill" size={20} color="#CD853F" />
           </TouchableOpacity>
         )}
       </View>
@@ -166,19 +166,22 @@ export function ChoreAssignmentItem({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A1A1A',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   containerCompleted: {
-    backgroundColor: '#F8F8F8',
-    opacity: 0.8,
+    backgroundColor: '#0A0A0A',
+    opacity: 0.7,
+    borderColor: 'rgba(255, 193, 37, 0.1)',
   },
   header: {
     flexDirection: 'row',
@@ -201,16 +204,16 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#FFC125',
     marginBottom: 4,
   },
   titleCompleted: {
     textDecorationLine: 'line-through',
-    color: '#999',
+    color: '#8B8B8B',
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: '#D4AF37',
   },
   deleteButton: {
     padding: 4,
@@ -232,18 +235,20 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   avatarPlaceholder: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFC125',
   },
   avatarText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#FFC125',
   },
   assigneeName: {
     fontSize: 14,
-    color: '#666',
+    color: '#D4AF37',
     fontWeight: '500',
   },
   badges: {
@@ -251,44 +256,49 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badge: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#0F172A',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.3)',
   },
   badgeOverdue: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: '#1E293B',
+    borderColor: 'rgba(205, 133, 63, 0.5)',
   },
   badgeText: {
     fontSize: 12,
-    color: '#666',
+    color: '#FFC125',
     fontWeight: '500',
   },
   badgeTextOverdue: {
-    color: '#FF3B30',
+    color: '#CD853F',
   },
   completeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#34C759',
+    backgroundColor: '#1E3A8A',
     borderRadius: 8,
     paddingVertical: 12,
     gap: 8,
+    borderWidth: 2,
+    borderColor: '#FFC125',
   },
   completeButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#FFC125',
   },
   completedInfo: {
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: 'rgba(255, 193, 37, 0.2)',
   },
   completedText: {
     fontSize: 14,
-    color: '#34C759',
+    color: '#FFC125',
     fontWeight: '500',
     textAlign: 'center',
   },

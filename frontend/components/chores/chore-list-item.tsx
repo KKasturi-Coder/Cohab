@@ -53,13 +53,13 @@ export function ChoreListItem({ chore, onEdit, onDelete, onAssign }: ChoreListIt
           <Text style={styles.title}>{chore.title}</Text>
           <View style={styles.actions}>
             <TouchableOpacity onPress={() => onAssign(chore)} style={styles.actionButton}>
-              <IconSymbol name="person.badge.plus" size={20} color="#007AFF" />
+              <IconSymbol name="person.badge.plus" size={20} color="#FFC125" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onEdit(chore)} style={styles.actionButton}>
-              <IconSymbol name="pencil" size={20} color="#007AFF" />
+              <IconSymbol name="pencil" size={20} color="#FFC125" />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleDelete} style={styles.actionButton}>
-              <IconSymbol name="trash" size={20} color="#FF3B30" />
+              <IconSymbol name="trash" size={20} color="#CD853F" />
             </TouchableOpacity>
           </View>
         </View>
@@ -94,15 +94,17 @@ export function ChoreListItem({ chore, onEdit, onDelete, onAssign }: ChoreListIt
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A1A1A',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   content: {
     gap: 8,
@@ -115,7 +117,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1A1A1A',
+    color: '#FFC125',
     flex: 1,
     marginRight: 8,
   },
@@ -128,7 +130,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: '#D4AF37',
     lineHeight: 20,
   },
   footer: {
@@ -140,14 +142,16 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   badge: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#0F172A',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.3)',
   },
   badgeText: {
     fontSize: 12,
-    color: '#666',
+    color: '#FFC125',
     fontWeight: '500',
   },
 });

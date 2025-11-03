@@ -183,7 +183,7 @@ export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#007AFF" />
+            <ActivityIndicator size="large" color="#FFC125" />
           </View>
         ) : activeTab === 'assignments' ? (
           <View style={styles.assignmentsContent}>
@@ -219,7 +219,7 @@ export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
 
             {assignments.length === 0 && (
               <View style={styles.emptyState}>
-                <IconSymbol name="checkmark.circle" size={64} color="#CCC" />
+                <IconSymbol name="checkmark.circle" size={64} color="#8B8B8B" />
                 <Text style={styles.emptyStateText}>No chore assignments yet</Text>
                 <Text style={styles.emptyStateHint}>
                   Create chores and assign them to roommates to get started
@@ -231,7 +231,7 @@ export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
           <View style={styles.choresContent}>
             {chores.length === 0 ? (
               <View style={styles.emptyState}>
-                <IconSymbol name="list.bullet.clipboard" size={64} color="#CCC" />
+                <IconSymbol name="list.bullet.clipboard" size={64} color="#8B8B8B" />
                 <Text style={styles.emptyStateText}>No chores created yet</Text>
                 <Text style={styles.emptyStateHint}>
                   Tap the + button below to create your first chore
@@ -291,32 +291,32 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    backgroundColor: '#0A0A0A',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(255, 193, 37, 0.3)',
   },
   tab: {
     flex: 1,
     paddingVertical: 16,
     alignItems: 'center',
-    borderBottomWidth: 2,
+    borderBottomWidth: 3,
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: '#007AFF',
+    borderBottomColor: '#FFC125',
   },
   tabText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#666',
+    color: '#8B8B8B',
   },
   tabTextActive: {
-    color: '#007AFF',
-    fontWeight: '600',
+    color: '#FFC125',
+    fontWeight: '700',
   },
   content: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#000000',
   },
   loadingContainer: {
     padding: 40,
@@ -333,9 +333,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1A1A1A',
+    fontWeight: '700',
+    color: '#FFC125',
     marginBottom: 12,
+    textShadowColor: 'rgba(255, 193, 37, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   emptyState: {
     padding: 40,
@@ -345,13 +348,13 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#999',
+    color: '#D4AF37',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateHint: {
     fontSize: 14,
-    color: '#999',
+    color: '#8B8B8B',
     textAlign: 'center',
     maxWidth: 300,
   },
@@ -362,13 +365,15 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 8,
     elevation: 8,
+    borderWidth: 2,
+    borderColor: '#FFC125',
   },
 });

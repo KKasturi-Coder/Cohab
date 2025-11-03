@@ -122,9 +122,9 @@ export default function DashboardScreen() {
 
   if (isCheckingAuth || loading) {
     return (
-      <LinearGradient colors={['#F0F8E8', '#E8F4FD']} style={styles.container}>
+      <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#000000" />
+          <ActivityIndicator size="large" color="#FFC125" />
           <ThemedText>Loading dashboard...</ThemedText>
         </View>
       </LinearGradient>
@@ -132,7 +132,7 @@ export default function DashboardScreen() {
   }
 
   return (
-    <LinearGradient colors={['#F0F8E8', '#E8F4FD']} style={styles.container}>
+    <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
       <ScrollView 
         style={styles.scrollView} 
         showsVerticalScrollIndicator={false}
@@ -142,18 +142,18 @@ export default function DashboardScreen() {
         <View style={styles.stickyHeader}>
           <View style={styles.header}>
             <TouchableOpacity style={styles.headerButton}>
-              <IconSymbol name="gearshape.fill" size={24} color="#666666" />
+              <IconSymbol name="gearshape.fill" size={24} color="#FFC125" />
             </TouchableOpacity>
             
             <View style={styles.logoContainer}>
               <ThemedText style={styles.logoText}>
-                <ThemedText style={styles.logoGreen}>Co</ThemedText>
-                <ThemedText style={styles.logoLightGreen}>hab</ThemedText>
+                <ThemedText style={styles.logoGold}>Co</ThemedText>
+                <ThemedText style={styles.logoDarkBlue}>hab</ThemedText>
               </ThemedText>
             </View>
             
             <TouchableOpacity style={styles.headerButton}>
-              <IconSymbol name="bubble.left.and.bubble.right.fill" size={24} color="#666666" />
+              <IconSymbol name="bubble.left.and.bubble.right.fill" size={24} color="#FFC125" />
             </TouchableOpacity>
           </View>
         </View>
@@ -241,16 +241,16 @@ export default function DashboardScreen() {
               
               // Determine the status and colors
               let status = 'upcoming';
-              let iconColor = '#7CB342'; // Green for upcoming
+              let iconColor = '#FFC125'; // Rich gold for upcoming
               let iconName = assignment.chore.requiresProof ? "camera.fill" : "checkmark.circle.fill";
               
               if (isPastDue) {
                 status = 'overdue';
-                iconColor = '#FF3B30'; // Red for overdue
+                iconColor = '#CD853F'; // Perennial gold for overdue
                 iconName = 'exclamationmark.triangle';
               } else if (isDueToday) {
                 status = 'dueToday';
-                iconColor = '#FF9500'; // Orange for due today
+                iconColor = '#D4AF37'; // Metallic gold for due today
                 iconName = 'bell';
               }
               
@@ -280,51 +280,6 @@ export default function DashboardScreen() {
             </View>
           </View>
         </View>
-
-        {/* Home Details */}
-        <View style={styles.sectionContainer}>
-          <ThemedText style={styles.sectionTitle}>Home Details</ThemedText>
-          <TouchableOpacity 
-            style={styles.homeCard}
-            onPress={() => {
-              if (houseInfo?.id) {
-                router.push(`/household-detail?id=${houseInfo.id}`);
-              }
-            }}
-            disabled={!houseInfo?.id}
-          >
-            <View style={styles.homeIcon}>
-              <IconSymbol name="house.fill" size={24} color="#7CB342" />
-            </View>
-            <View style={styles.homeInfo}>
-              <ThemedText style={styles.homeName}>
-                {houseInfo?.name || 'No House Yet'}
-              </ThemedText>
-              <ThemedText style={styles.homeUnit}>
-                {houseInfo?.address || 'Join or create a house to get started'}
-              </ThemedText>
-            </View>
-            {houseInfo?.id && (
-              <IconSymbol name="chevron.right" size={20} color="#999999" />
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Roomies Section */}
-        <View style={styles.sectionContainer}>
-          <ThemedText style={styles.sectionTitle}>Roomies</ThemedText>
-          <View style={styles.householdsContainer}>
-            <View style={styles.avatarRow}>
-              <View style={styles.avatar} />
-              <View style={styles.avatar} />
-              <View style={styles.avatar} />
-              <View style={styles.avatar} />
-            </View>
-            <TouchableOpacity style={styles.addButton}>
-              <ThemedText style={styles.addButtonText}>Add</ThemedText>
-            </TouchableOpacity>
-          </View>
-        </View>
         {/* Bottom padding for last item */}
         <View style={{ height: 20 }} />
       </ScrollView>
@@ -337,7 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stickyHeader: {
-    backgroundColor: '#F0F8E8',
+    backgroundColor: '#000000',
     shadowColor: 'transparent',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0,
@@ -346,7 +301,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(124, 179, 66, 0.25)',
+    borderBottomColor: 'rgba(255, 193, 37, 0.3)',
   },
   scrollView: {
     flex: 1,
@@ -369,11 +324,11 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(30, 58, 138, 0.3)',
     borderRadius: 14,
-    shadowColor: '#000000',
+    shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
   },
   logoContainer: {
@@ -384,12 +339,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.5,
   },
-  logoGreen: {
-    color: '#7CB342',
+  logoGold: {
+    color: '#FFC125',
     fontWeight: '800',
   },
-  logoLightGreen: {
-    color: '#9ACD32',
+  logoDarkBlue: {
+    color: '#1E3A8A',
     fontWeight: '800',
   },
   greetingContainer: {
@@ -400,12 +355,12 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2C2C2C',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   date: {
     fontSize: 16,
-    color: '#666666',
+    color: '#D4AF37',
   },
   cardsContainer: {
     paddingHorizontal: 20,
@@ -428,13 +383,13 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   pastDueCard: {
-    backgroundColor: '#FFB6C1',
+    backgroundColor: '#CD853F',
   },
   toDoCard: {
-    backgroundColor: '#FFE4B5',
+    backgroundColor: '#D4AF37',
   },
   doneCard: {
-    backgroundColor: '#98FB98',
+    backgroundColor: '#FFC125',
   },
   expenseCard: {
     flex: 1,
@@ -449,10 +404,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   oweCard: {
-    backgroundColor: '#FFE4B5',
+    backgroundColor: '#1E3A8A',
   },
   owedCard: {
-    backgroundColor: '#ADD8E6',
+    backgroundColor: '#1E40AF',
   },
   cardTitle: {
     fontSize: 14,
@@ -472,70 +427,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2C2C2C',
+    color: '#FFC125',
     marginBottom: 12,
-  },
-  homeCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  homeIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#F0F8E8',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  homeInfo: {
-    flex: 1,
-  },
-  homeName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2C2C2C',
-    marginBottom: 2,
-  },
-  homeUnit: {
-    fontSize: 14,
-    color: '#666666',
-  },
-  householdsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  avatarRow: {
-    flexDirection: 'row',
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#E0E0E0',
-    marginRight: -8,
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  addButton: {
-    backgroundColor: '#7CB342',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
   },
   choreCard: {
     backgroundColor: '#FFFFFF',

@@ -14,7 +14,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarInactiveTintColor: '#666666',
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarActiveBackgroundColor: 'transparent',
@@ -27,9 +27,9 @@ export default function TabLayout() {
           alignItems: 'center',
         },
         tabBarStyle: {
-          backgroundColor: '#F0F8E8',
+          backgroundColor: '#000000',
           borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: 'rgba(124, 179, 66, 0.25)',
+          borderTopColor: 'rgba(255, 193, 37, 0.3)',
           elevation: 0,
           shadowOpacity: 0,
           paddingTop: 6,
@@ -48,10 +48,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="chores"
         options={{
           title: '',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet.clipboard" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="expenses"
+        options={{
+          title: '',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="group"
+        options={{
+          title: '',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
