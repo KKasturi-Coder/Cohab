@@ -4,7 +4,6 @@
     "dockerfile": "backend/Dockerfile"
   },
   "deploy": {
-    "startCommand": "docker-compose up --build",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
