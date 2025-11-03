@@ -47,12 +47,6 @@ async def my_chore_assignments(
             user_data = parse_datetime_fields(assignment["profiles"], "created_at", "updated_at")
             assignment_data = parse_datetime_fields(assignment, "due_date", "completed_at", "created_at")
             
-            # Skip if required fields are missing
-            if not all(key in chore_data for key in ["id", "name", "household_id"]):
-                continue
-                
-            if not all(key in user_data for key in ["id", "first_name", "last_name"]):
-                continue
             
             assignments.append(ChoreAssignment(
                 id=assignment_data["id"],

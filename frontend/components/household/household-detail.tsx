@@ -1,16 +1,7 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Alert,
-  Modal,
-  TextInput,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, Modal, TextInput, ActivityIndicator, Switch } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import type { PickerItemProps } from '@react-native-picker/picker/typings/Picker';
 import * as Clipboard from 'expo-clipboard';
 import { Household, UpdateHouseholdInput } from '@/lib/graphql/types';
 import { updateHousehold, leaveHousehold } from '@/lib/graphql/mutations/households';
@@ -33,8 +24,15 @@ export function HouseholdDetail({ household, onUpdate }: HouseholdDetailProps) {
     description: household.description || '',
     address: household.address || '',
     rentAmount: household.rentAmount,
+    currency: household.currency,
+    householdType: household.householdType,
+    amenities: household.amenities || [],
+    images: household.images || [],
+    isAvailable: household.isAvailable
   });
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isFocused, setIsFocused] = useState<string | null>(null);
+  const amenityInputRef = useRef<TextInput>(null);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -250,45 +248,146 @@ export function HouseholdDetail({ household, onUpdate }: HouseholdDetailProps) {
           <ScrollView style={styles.modalContent}>
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={editData.name}
-                onChangeText={(text) => setEditData({ ...editData, name: text })}
-                placeholder="Household name"
-              />
+                <TextInput
+                  style={[styles.input, isFocused === 'name' && styles.inputFocused]}
+                  value={editData.name}
+                  onChangeText={(text) => setEditData({ ...editData, name: text })}
+                  placeholder="Household name"
+                  placeholderTextColor="#999"
+                  onFocus={() => setIsFocused('name')}
+                  onBlur={() => setIsFocused(null)}
+                />
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Description</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={editData.description}
-                onChangeText={(text) => setEditData({ ...editData, description: text })}
-                placeholder="Description"
-                multiline
-                numberOfLines={4}
-              />
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={editData.description}
+                  onChangeText={(text) => setEditData({ ...editData, description: text })}
+                  placeholder="Description"
+                  placeholderTextColor="#999"
+                  multiline
+                  numberOfLines={4}
+                  onFocus={() => {
+                    // Add focus style if needed
+                  }}
+                />
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Address</Text>
-              <TextInput
-                style={styles.input}
-                value={editData.address}
-                onChangeText={(text) => setEditData({ ...editData, address: text })}
-                placeholder="Address"
-              />
+                <TextInput
+                  style={[styles.input, isFocused === 'address' && styles.inputFocused]}
+                  value={editData.address}
+                  onChangeText={(text) => setEditData({ ...editData, address: text })}
+                  placeholder="Address"
+                  placeholderTextColor="#999"
+                  onFocus={() => setIsFocused('address')}
+                  onBlur={() => setIsFocused(null)}
+                />
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Rent Amount</Text>
-              <TextInput
-                style={styles.input}
-                value={editData.rentAmount?.toString() || ''}
-                onChangeText={(text) => setEditData({ ...editData, rentAmount: parseFloat(text) || undefined })}
-                placeholder="Rent amount"
-                keyboardType="numeric"
-              />
+              <View style={styles.amountRow}>
+                <TextInput
+                  style={[styles.input, { flex: 1, marginRight: 8 }]}
+                  value={editData.rentAmount?.toString() || ''}
+                  onChangeText={(text) => setEditData({ ...editData, rentAmount: parseFloat(text) || undefined })}
+                  placeholder="Rent amount"
+                  keyboardType="numeric"
+                />
+                <View style={[styles.input, styles.currencyInput]}>
+                  <Text>{editData.currency || 'USD'}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Household Type</Text>
+              <View style={styles.selectContainer}>
+                {[
+                  { value: 'private', label: '🏠 Private' },
+                  { value: 'shared', label: '👥 Shared' },
+                  { value: 'studio', label: '🏢 Studio' },
+                  { value: 'apartment', label: '🏘️ Apartment' },
+                ].map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[
+                      styles.typeOption,
+                      editData.householdType === option.value && styles.typeOptionSelected,
+                    ]}
+                    onPress={() => setEditData({ ...editData, householdType: option.value })}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[
+                      styles.typeOptionText,
+                      editData.householdType === option.value && styles.typeOptionTextSelected
+                    ]}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Amenities</Text>
+              <View style={styles.tagsContainer}>
+                {editData.amenities?.map((amenity, index) => (
+                  <View key={index} style={styles.tag}>
+                    <Text style={styles.tagText}>✨ {amenity}</Text>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        const newAmenities = [...(editData.amenities || [])];
+                        newAmenities.splice(index, 1);
+                        setEditData({ ...editData, amenities: newAmenities });
+                      }}
+                      style={styles.removeTag}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Text style={styles.removeTagText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <TextInput
+                  ref={amenityInputRef}
+                  style={[styles.input, styles.tagInput]}
+                  placeholder="Add amenity and press Enter"
+                  placeholderTextColor="#999"
+                  onFocus={() => {
+                    // Add focus style if needed
+                  }}
+                  onSubmitEditing={(e) => {
+                    const newAmenity = e.nativeEvent.text.trim();
+                    if (newAmenity) {
+                      setEditData({
+                        ...editData,
+                        amenities: [...(editData.amenities || []), newAmenity]
+                      });
+                      // Clear the input
+                      if (amenityInputRef.current) {
+                        amenityInputRef.current.clear();
+                      }
+                    }
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Availability</Text>
+              <View style={styles.switchContainer}>
+                <Text>Available for new roommates</Text>
+                <Switch
+                  value={editData.isAvailable !== false}
+                  onValueChange={(value) => setEditData({ ...editData, isAvailable: value })}
+                  trackColor={{ false: '#767577', true: '#81b0ff' }}
+                  thumbColor={editData.isAvailable !== false ? '#007AFF' : '#f4f3f4'}
+                />
+              </View>
             </View>
           </ScrollView>
         </View>
@@ -520,7 +619,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   inputLabel: {
     fontSize: 14,
@@ -529,14 +628,117 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
     color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+  inputFocused: {
+    borderColor: '#007AFF',
+    backgroundColor: '#FFFFFF',
   },
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  currencyInput: {
+    minWidth: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  typeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+  },
+  typeOptionSelected: {
+    backgroundColor: '#F0F7FF',
+    borderColor: '#007AFF',
+  },
+  typeOptionText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#1A1A1A',
+  },
+  typeOptionTextSelected: {
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F7FF',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#B8E1FF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  tagText: {
+    color: '#0066CC',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  removeTag: {
+    marginLeft: 6,
+    padding: 2,
+  },
+  removeTagText: {
+    color: '#4A90E2',
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 16,
+  },
+  tagInput: {
+    flex: 1,
+    minHeight: 48,
+    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
   },
 });
