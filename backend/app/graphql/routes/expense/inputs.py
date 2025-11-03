@@ -8,7 +8,7 @@ from datetime import datetime
 class CreateExpenseInput:
     """Input for creating a new expense"""
     
-    room_id: str
+    household_id: str
     title: str
     description: Optional[str] = None
     amount: float

@@ -7,10 +7,10 @@ import json
 
 @strawberry.type
 class Message:
-    """Message type for room chat"""
+    """Message type for household chat"""
     
     id: strawberry.ID
-    room_id: str
+    household_id: str
     sender_id: str
     content: str
     message_type: Optional[str] = None

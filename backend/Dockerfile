@@ -1,20 +1,32 @@
 FROM python:3.11-slim
 
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+# Set work directory
 WORKDIR /app
 
-# Copy pyproject.toml from root
-COPY ../pyproject.toml .
-
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv for faster dependency management
+# Install uv
 RUN pip install uv
 
-# Install dependencies
-RUN uv pip install --system -e .
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies using uv and create virtual environment
+RUN uv sync --frozen
+
+# Ensure virtual environment binaries are on PATH
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Verify uvicorn is installed
+RUN /app/.venv/bin/uvicorn --version
 
 # Copy application code
 COPY . .
@@ -23,4 +35,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "uvloop", "--workers", "4", "--log-level", "info"]

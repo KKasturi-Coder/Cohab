@@ -7,7 +7,7 @@ from typing import Optional
 class CreateMessageInput:
     """Input for creating a new message"""
     
-    room_id: str
+    household_id: str
     content: str
     message_type: Optional[str] = "text"
     metadata: Optional[str] = None

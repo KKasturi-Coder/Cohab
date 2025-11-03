@@ -5,7 +5,7 @@
 SELECT table_name 
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
-    AND table_name IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND table_name IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY table_name;
 
 -- 2. RLS CHECK - All should show 't' (true) for rls_enabled
@@ -14,7 +14,7 @@ SELECT
     rowsecurity as rls_enabled
 FROM pg_tables 
 WHERE schemaname = 'public' 
-    AND tablename IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND tablename IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY tablename;
 
 -- 3. POLICY COUNT - Should show policies for each table
@@ -23,7 +23,7 @@ SELECT
     count(*) as policy_count
 FROM pg_policies 
 WHERE schemaname = 'public'
-    AND tablename IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND tablename IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 GROUP BY tablename
 ORDER BY tablename;
 

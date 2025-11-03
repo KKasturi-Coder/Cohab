@@ -7,7 +7,7 @@ SELECT
     table_type
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
-    AND table_name IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND table_name IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY table_name;
 
 -- 2. Check table structures and columns
@@ -19,7 +19,7 @@ SELECT
     column_default
 FROM information_schema.columns 
 WHERE table_schema = 'public' 
-    AND table_name IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND table_name IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY table_name, ordinal_position;
 
 -- 3. Check if Row Level Security (RLS) is enabled
@@ -29,7 +29,7 @@ SELECT
     rowsecurity as rls_enabled
 FROM pg_tables 
 WHERE schemaname = 'public' 
-    AND tablename IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND tablename IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY tablename;
 
 -- 4. Check RLS policies
@@ -61,7 +61,7 @@ JOIN information_schema.constraint_column_usage AS ccu
     AND ccu.table_schema = tc.table_schema
 WHERE tc.constraint_type = 'FOREIGN KEY' 
     AND tc.table_schema = 'public'
-    AND tc.table_name IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND tc.table_name IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY tc.table_name;
 
 -- 6. Check indexes
@@ -72,7 +72,7 @@ SELECT
     indexdef
 FROM pg_indexes 
 WHERE schemaname = 'public' 
-    AND tablename IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND tablename IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY tablename, indexname;
 
 -- 7. Check triggers
@@ -84,7 +84,7 @@ SELECT
     action_statement
 FROM information_schema.triggers 
 WHERE trigger_schema = 'public'
-    AND event_object_table IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND event_object_table IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
 ORDER BY event_object_table, trigger_name;
 
 -- 8. Check functions
@@ -101,7 +101,7 @@ ORDER BY routine_name;
 -- Note: These will only work if you're authenticated
 SELECT 'profiles' as table_name, count(*) as row_count FROM public.profiles
 UNION ALL
-SELECT 'rooms' as table_name, count(*) as row_count FROM public.rooms
+SELECT 'households' as table_name, count(*) as row_count FROM public.households
 UNION ALL
 SELECT 'roommates' as table_name, count(*) as row_count FROM public.roommates
 UNION ALL
@@ -123,6 +123,6 @@ FROM information_schema.table_constraints tc
 LEFT JOIN information_schema.check_constraints cc 
     ON tc.constraint_name = cc.constraint_name
 WHERE tc.table_schema = 'public' 
-    AND tc.table_name IN ('profiles', 'rooms', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
+    AND tc.table_name IN ('profiles', 'households', 'roommates', 'expenses', 'expense_splits', 'messages', 'notifications')
     AND tc.constraint_type IN ('CHECK', 'UNIQUE')
 ORDER BY tc.table_name, tc.constraint_name;

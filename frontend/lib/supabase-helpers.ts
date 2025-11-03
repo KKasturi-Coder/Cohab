@@ -4,7 +4,7 @@ import { supabase } from './supabase'
 // Type aliases for easier use
 type Tables = Database['public']['Tables']
 type Profile = Tables['profiles']['Row']
-type Room = Tables['rooms']['Row']
+type Room = Tables['households']['Row']
 type Roommate = Tables['roommates']['Row']
 type Expense = Tables['expenses']['Row']
 type Message = Tables['messages']['Row']
@@ -80,46 +80,46 @@ export const profiles = {
 }
 
 // Room helpers
-export const rooms = {
-  async getRooms() {
+export const households = {
+  async getHouseholds() {
     const { data, error } = await supabase
-      .from('rooms')
+      .from('households')
       .select(`
         *,
         roommates!inner(user_id, status),
-        profiles!rooms_created_by_fkey(full_name, avatar_url)
+        profiles!households_created_by_fkey(full_name, avatar_url)
       `)
       .eq('roommates.status', 'accepted')
     return { data, error }
   },
 
-  async getRoom(roomId: string) {
+  async getRoom(householdId: string) {
     const { data, error } = await supabase
-      .from('rooms')
+      .from('households')
       .select(`
         *,
         roommates!inner(user_id, status, profiles(full_name, avatar_url)),
-        profiles!rooms_created_by_fkey(full_name, avatar_url)
+        profiles!households_created_by_fkey(full_name, avatar_url)
       `)
-      .eq('id', roomId)
+      .eq('id', householdId)
       .single()
     return { data, error }
   },
 
-  async createRoom(room: Omit<Room, 'id' | 'created_at' | 'updated_at'>) {
+  async createRoom(household: Omit<Room, 'id' | 'created_at' | 'updated_at'>) {
     const { data, error } = await supabase
-      .from('rooms')
-      .insert(room)
+      .from('households')
+      .insert(household)
       .select()
       .single()
     return { data, error }
   },
 
-  async updateRoom(roomId: string, updates: Partial<Room>) {
+  async updateRoom(householdId: string, updates: Partial<Room>) {
     const { data, error } = await supabase
-      .from('rooms')
+      .from('households')
       .update(updates)
-      .eq('id', roomId)
+      .eq('id', householdId)
       .select()
       .single()
     return { data, error }
@@ -128,11 +128,11 @@ export const rooms = {
 
 // Roommate helpers
 export const roommates = {
-  async joinRoom(roomId: string, userId: string) {
+  async joinRoom(householdId: string, userId: string) {
     const { data, error } = await supabase
       .from('roommates')
       .insert({
-        room_id: roomId,
+        household_id: householdId,
         user_id: userId,
         status: 'pending'
       })
@@ -151,14 +151,14 @@ export const roommates = {
     return { data, error }
   },
 
-  async getRoommates(roomId: string) {
+  async getRoommates(householdId: string) {
     const { data, error } = await supabase
       .from('roommates')
       .select(`
         *,
         profiles(full_name, avatar_url, email)
       `)
-      .eq('room_id', roomId)
+      .eq('household_id', householdId)
       .eq('status', 'accepted')
     return { data, error }
   }
@@ -166,7 +166,7 @@ export const roommates = {
 
 // Expense helpers
 export const expenses = {
-  async getExpenses(roomId: string) {
+  async getExpenses(householdId: string) {
     const { data, error } = await supabase
       .from('expenses')
       .select(`
@@ -177,7 +177,7 @@ export const expenses = {
           profiles(full_name, avatar_url)
         )
       `)
-      .eq('room_id', roomId)
+      .eq('household_id', householdId)
       .order('created_at', { ascending: false })
     return { data, error }
   },
@@ -207,14 +207,14 @@ export const expenses = {
 
 // Message helpers
 export const messages = {
-  async getMessages(roomId: string) {
+  async getMessages(householdId: string) {
     const { data, error } = await supabase
       .from('messages')
       .select(`
         *,
         profiles!messages_sender_id_fkey(full_name, avatar_url)
       `)
-      .eq('room_id', roomId)
+      .eq('household_id', householdId)
       .order('created_at', { ascending: true })
     return { data, error }
   },
@@ -237,7 +237,7 @@ export const userStatus = {
   async hasHouse(userId: string) {
     const { data, error } = await supabase
       .from('roommates')
-      .select('room_id, status')
+      .select('household_id, status')
       .eq('user_id', userId)
       .eq('status', 'accepted')
       .limit(1)
@@ -248,8 +248,8 @@ export const userStatus = {
     const { data, error } = await supabase
       .from('roommates')
       .select(`
-        room_id,
-        rooms(name, address, rent_amount, currency)
+        household_id,
+        households(name, address, rent_amount, currency)
       `)
       .eq('user_id', userId)
       .eq('status', 'accepted')
@@ -267,9 +267,9 @@ export const houses = {
     currency?: string
     createdBy: string
   }) {
-    // Create the room first
-    const { data: roomData, error: roomError } = await supabase
-      .from('rooms')
+    // Create the household first
+    const { data: householdData, error: householdError } = await supabase
+      .from('households')
       .insert({
         name: houseData.name,
         address: houseData.address,
@@ -281,13 +281,13 @@ export const houses = {
       .select()
       .single()
 
-    if (roomError) return { data: null, error: roomError }
+    if (householdError) return { data: null, error: householdError }
 
     // Add the creator as a roommate
     const { data: roommateData, error: roommateError } = await supabase
       .from('roommates')
       .insert({
-        room_id: roomData.id,
+        household_id: householdData.id,
         user_id: houseData.createdBy,
         status: 'accepted'
       })
@@ -296,30 +296,30 @@ export const houses = {
 
     if (roommateError) return { data: null, error: roommateError }
 
-    return { data: { room: roomData, roommate: roommateData }, error: null }
+    return { data: { household: householdData, roommate: roommateData }, error: null }
   },
 
   async joinHouse(houseCode: string, userId: string) {
-    // Find room by code (assuming code is stored in room name or a separate field)
+    // Find household by code (assuming code is stored in household name or a separate field)
     // For now, we'll search by name containing the code
-    const { data: rooms, error: searchError } = await supabase
-      .from('rooms')
+    const { data: households, error: searchError } = await supabase
+      .from('households')
       .select('id, name')
       .ilike('name', `%${houseCode}%`)
       .eq('is_available', true)
       .limit(1)
 
-    if (searchError || !rooms || rooms.length === 0) {
+    if (searchError || !households || households.length === 0) {
       return { data: null, error: new Error('House not found with that code') }
     }
 
-    const room = rooms[0]
+    const household = households[0]
 
     // Add user as roommate with pending status
     const { data: roommateData, error: roommateError } = await supabase
       .from('roommates')
       .insert({
-        room_id: room.id,
+        household_id: household.id,
         user_id: userId,
         status: 'pending'
       })
@@ -328,18 +328,18 @@ export const houses = {
 
     if (roommateError) return { data: null, error: roommateError }
 
-    return { data: { room, roommate: roommateData }, error: null }
+    return { data: { household, roommate: roommateData }, error: null }
   },
 
-  async generateHouseCode(roomId: string) {
+  async generateHouseCode(householdId: string) {
     // Generate a simple code (you can make this more sophisticated)
     const code = Math.random().toString(36).substring(2, 8).toUpperCase()
     
-    // Update room with the code (you might want to add a code field to your schema)
+    // Update household with the code (you might want to add a code field to your schema)
     const { data, error } = await supabase
-      .from('rooms')
-      .update({ name: `${code} - ${roomId}` }) // Temporary solution
-      .eq('id', roomId)
+      .from('households')
+      .update({ name: `${code} - ${householdId}` }) // Temporary solution
+      .eq('id', householdId)
       .select()
       .single()
 
@@ -348,21 +348,21 @@ export const houses = {
 }
 
 // Real-time subscriptions
-export const subscribeToRoom = (roomId: string, callback: (payload: any) => void) => {
+export const subscribeToRoom = (householdId: string, callback: (payload: any) => void) => {
   return supabase
-    .channel(`room:${roomId}`)
+    .channel(`household:${householdId}`)
     .on('postgres_changes', 
-      { event: '*', schema: 'public', table: 'messages', filter: `room_id=eq.${roomId}` },
+      { event: '*', schema: 'public', table: 'messages', filter: `household_id=eq.${householdId}` },
       callback
     )
     .subscribe()
 }
 
-export const subscribeToExpenses = (roomId: string, callback: (payload: any) => void) => {
+export const subscribeToExpenses = (householdId: string, callback: (payload: any) => void) => {
   return supabase
-    .channel(`expenses:${roomId}`)
+    .channel(`expenses:${householdId}`)
     .on('postgres_changes', 
-      { event: '*', schema: 'public', table: 'expenses', filter: `room_id=eq.${roomId}` },
+      { event: '*', schema: 'public', table: 'expenses', filter: `household_id=eq.${householdId}` },
       callback
     )
     .subscribe()

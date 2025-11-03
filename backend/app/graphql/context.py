@@ -2,6 +2,7 @@
 from typing import Optional
 from supabase import AsyncClient
 from strawberry.fastapi import BaseContext
+from .utils.dataloaders import Dataloaders, create_dataloaders
 
 
 class CustomContext(BaseContext):
@@ -14,3 +15,4 @@ class CustomContext(BaseContext):
     ):
         self.supabase = supabase
         self.user_id = user_id
+        self.dataloaders = create_dataloaders(supabase)

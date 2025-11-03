@@ -9,7 +9,7 @@ class Expense:
     """Expense tracking type"""
     
     id: strawberry.ID
-    room_id: str
+    household_id: str
     title: str
     description: Optional[str] = None
     amount: float

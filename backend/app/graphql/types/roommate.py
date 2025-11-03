@@ -10,7 +10,7 @@ class Roommate:
     
     id: strawberry.ID
     user_id: str
-    room_id: str
+    household_id: str
     status: str  # pending, active, left
     joined_at: Optional[datetime] = None
     left_at: Optional[datetime] = None

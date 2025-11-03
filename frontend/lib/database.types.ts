@@ -38,7 +38,7 @@ export interface Database {
           updated_at?: string
         }
       }
-      rooms: {
+      households: {
         Row: {
           id: string
           name: string
@@ -46,7 +46,7 @@ export interface Database {
           address: string | null
           rent_amount: number | null
           currency: string
-          room_type: 'private' | 'shared' | 'studio' | 'apartment' | null
+          household_type: 'private' | 'shared' | 'studio' | 'apartment' | null
           amenities: string[] | null
           images: string[] | null
           is_available: boolean
@@ -61,7 +61,7 @@ export interface Database {
           address?: string | null
           rent_amount?: number | null
           currency?: string
-          room_type?: 'private' | 'shared' | 'studio' | 'apartment' | null
+          household_type?: 'private' | 'shared' | 'studio' | 'apartment' | null
           amenities?: string[] | null
           images?: string[] | null
           is_available?: boolean
@@ -76,7 +76,7 @@ export interface Database {
           address?: string | null
           rent_amount?: number | null
           currency?: string
-          room_type?: 'private' | 'shared' | 'studio' | 'apartment' | null
+          household_type?: 'private' | 'shared' | 'studio' | 'apartment' | null
           amenities?: string[] | null
           images?: string[] | null
           is_available?: boolean
@@ -89,7 +89,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          room_id: string
+          household_id: string
           status: 'pending' | 'accepted' | 'rejected' | 'left'
           joined_at: string
           left_at: string | null
@@ -97,7 +97,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          room_id: string
+          household_id: string
           status?: 'pending' | 'accepted' | 'rejected' | 'left'
           joined_at?: string
           left_at?: string | null
@@ -105,7 +105,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          room_id?: string
+          household_id?: string
           status?: 'pending' | 'accepted' | 'rejected' | 'left'
           joined_at?: string
           left_at?: string | null
@@ -114,7 +114,7 @@ export interface Database {
       expenses: {
         Row: {
           id: string
-          room_id: string
+          household_id: string
           title: string
           description: string | null
           amount: number
@@ -126,7 +126,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          room_id: string
+          household_id: string
           title: string
           description?: string | null
           amount: number
@@ -138,7 +138,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          room_id?: string
+          household_id?: string
           title?: string
           description?: string | null
           amount?: number
@@ -178,7 +178,7 @@ export interface Database {
       messages: {
         Row: {
           id: string
-          room_id: string
+          household_id: string
           sender_id: string
           content: string
           message_type: 'text' | 'image' | 'file' | 'expense'
@@ -187,7 +187,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          room_id: string
+          household_id: string
           sender_id: string
           content: string
           message_type?: 'text' | 'image' | 'file' | 'expense'
@@ -196,7 +196,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          room_id?: string
+          household_id?: string
           sender_id?: string
           content?: string
           message_type?: 'text' | 'image' | 'file' | 'expense'

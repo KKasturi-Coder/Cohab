@@ -1,10 +1,8 @@
 """Main FastAPI application with GraphQL integration"""
-import os
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
 from strawberry.fastapi import GraphQLRouter
 from dotenv import load_dotenv
-from supabase import create_client, Client
+from app.supabase.utils.client import create_authenticated_client
 
 from app.graphql.schema import schema
 from app.graphql.context import CustomContext
@@ -19,32 +17,17 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Initialize Supabase client
-supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_KEY")
-
-if not supabase_url or not supabase_key:
-    raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
-
-supabase: Client = create_client(supabase_url, supabase_key)
-
-
 # Context getter for GraphQL
-async def get_context() -> CustomContext:
+async def get_context(request: Request) -> CustomContext:
     """Get GraphQL context with dependencies"""
-    # TODO: Extract user_id from authentication token
-    # For now, returning context without user_id
+    try:
+        auth_header = request.headers.get("Authorization", "")
+        token = auth_header.replace("Bearer ", "") if auth_header.startswith("Bearer ") else ""
+        supabase_client = await create_authenticated_client(token)
+    except Exception as e:
+        raise Exception(f"Failed to create authenticated client: {e}")
     return CustomContext(
-        supabase=supabase,
+        supabase=supabase_client,
         user_id=None,
     )
 

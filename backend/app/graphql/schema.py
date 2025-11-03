@@ -1,10 +1,10 @@
 """Main GraphQL schema with domain-specific root fields"""
 import strawberry
-from .routes.room.schema import RoomsQueries, RoomsMutations
-from .routes.profile.schema import ProfilesQueries, ProfilesMutations
-from .routes.expense.schema import ExpensesQueries, ExpensesMutations
-from .routes.message.schema import MessagesQueries, MessagesMutations
-from .routes.notification.schema import NotificationsQueries, NotificationsMutations
+from .routes.households import HouseholdQueries, HouseholdMutations
+from .routes.profile import ProfileQueries, ProfileMutations
+from .routes.expense import ExpenseQueries, ExpenseMutations
+from .routes.message import MessageQueries, MessageMutations
+from .routes.notification import NotificationQueries, NotificationMutations
 
 
 @strawberry.type
@@ -12,58 +12,58 @@ class Query:
     """Root Query type with nested domain fields"""
     
     @strawberry.field
-    def rooms(self) -> RoomsQueries:
+    def households(self) -> HouseholdQueries:
         """Room-related queries and mutations"""
-        return RoomsQueries()
+        return HouseholdQueries()
     
     @strawberry.field
-    def profiles(self) -> ProfilesQueries:
+    def profiles(self) -> ProfileQueries:
         """Profile-related queries and mutations"""
-        return ProfilesQueries()
+        return ProfileQueries()
     
     @strawberry.field
-    def expenses(self) -> ExpensesQueries:
+    def expenses(self) -> ExpenseQueries:
         """Expense-related queries and mutations"""
-        return ExpensesQueries()
+        return ExpenseQueries()
     
     @strawberry.field
-    def messages(self) -> MessagesQueries:
+    def messages(self) -> MessageQueries:
         """Message-related queries and mutations"""
-        return MessagesQueries()
+        return MessageQueries()
     
     @strawberry.field
-    def notifications(self) -> NotificationsQueries:
+    def notifications(self) -> NotificationQueries:
         """Notification-related queries and mutations"""
-        return NotificationsQueries()
+        return NotificationQueries()
 
 @strawberry.type
 class Mutation:
     """Root Mutation type with nested domain fields"""
     
     @strawberry.field
-    def rooms(self) -> RoomsMutations:
+    def households(self) -> HouseholdMutations:
         """Room-related queries and mutations"""
-        return RoomsMutations()
+        return HouseholdMutations()
     
     @strawberry.field
-    def profiles(self) -> ProfilesMutations:
+    def profiles(self) -> ProfileMutations:
         """Profile-related queries and mutations"""
-        return ProfilesMutations()
+        return ProfileMutations()
     
     @strawberry.field
-    def expenses(self) -> ExpensesMutations:
+    def expenses(self) -> ExpenseMutations:
         """Expense-related queries and mutations"""
-        return ExpensesMutations()
+        return ExpenseMutations()
     
     @strawberry.field
-    def messages(self) -> MessagesMutations:
+    def messages(self) -> MessageMutations:
         """Message-related queries and mutations"""
-        return MessagesMutations()
+        return MessageMutations()
     
     @strawberry.field
-    def notifications(self) -> NotificationsMutations:
+    def notifications(self) -> NotificationMutations:
         """Notification-related queries and mutations"""
-        return NotificationsMutations()
+        return NotificationMutations()
 
 # Create the GraphQL schema
 schema = strawberry.Schema(query=Query, mutation=Mutation)

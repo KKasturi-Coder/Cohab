@@ -94,8 +94,8 @@ export default function DashboardScreen() {
           
           <View style={styles.logoContainer}>
             <ThemedText style={styles.logoText}>
-              <ThemedText style={styles.logoGreen}>roomie</ThemedText>
-              <ThemedText style={styles.logoLightGreen}> hub</ThemedText>
+              <ThemedText style={styles.logoGreen}>Co</ThemedText>
+              <ThemedText style={styles.logoLightGreen}>hab</ThemedText>
             </ThemedText>
           </View>
           
@@ -153,10 +153,10 @@ export default function DashboardScreen() {
             </View>
             <View style={styles.homeInfo}>
               <ThemedText style={styles.homeName}>
-                {houseInfo?.rooms?.name || 'No House Yet'}
+                {houseInfo?.households?.name || 'No House Yet'}
               </ThemedText>
               <ThemedText style={styles.homeUnit}>
-                {houseInfo?.rooms?.address || 'Join or create a house to get started'}
+                {houseInfo?.households?.address || 'Join or create a house to get started'}
               </ThemedText>
             </View>
           </View>
@@ -165,7 +165,7 @@ export default function DashboardScreen() {
         {/* Roomies Section */}
         <View style={styles.sectionContainer}>
           <ThemedText style={styles.sectionTitle}>Roomies</ThemedText>
-          <View style={styles.roomiesContainer}>
+          <View style={styles.householdiesContainer}>
             <View style={styles.avatarRow}>
               <View style={styles.avatar} />
               <View style={styles.avatar} />
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666666',
   },
-  roomiesContainer: {
+  householdsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -66,7 +66,7 @@ export type Database = {
           due_date: string | null
           id: string
           paid_by: string | null
-          room_id: string | null
+          household_id: string | null
           title: string
         }
         Insert: {
@@ -78,7 +78,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           paid_by?: string | null
-          room_id?: string | null
+          household_id?: string | null
           title: string
         }
         Update: {
@@ -90,7 +90,7 @@ export type Database = {
           due_date?: string | null
           id?: string
           paid_by?: string | null
-          room_id?: string | null
+          household_id?: string | null
           title?: string
         }
         Relationships: [
@@ -102,10 +102,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "expenses_room_id_fkey"
-            columns: ["room_id"]
+            foreignKeyName: "expenses_household_id_fkey"
+            columns: ["household_id"]
             isOneToOne: false
-            referencedRelation: "rooms"
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -117,7 +117,7 @@ export type Database = {
           id: string
           message_type: string | null
           metadata: Json | null
-          room_id: string | null
+          household_id: string | null
           sender_id: string | null
         }
         Insert: {
@@ -126,7 +126,7 @@ export type Database = {
           id?: string
           message_type?: string | null
           metadata?: Json | null
-          room_id?: string | null
+          household_id?: string | null
           sender_id?: string | null
         }
         Update: {
@@ -135,15 +135,15 @@ export type Database = {
           id?: string
           message_type?: string | null
           metadata?: Json | null
-          room_id?: string | null
+          household_id?: string | null
           sender_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "messages_room_id_fkey"
-            columns: ["room_id"]
+            foreignKeyName: "messages_household_id_fkey"
+            columns: ["household_id"]
             isOneToOne: false
-            referencedRelation: "rooms"
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
           {
@@ -231,7 +231,7 @@ export type Database = {
           id: string
           joined_at: string | null
           left_at: string | null
-          room_id: string | null
+          household_id: string | null
           status: string | null
           user_id: string | null
         }
@@ -239,7 +239,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           left_at?: string | null
-          room_id?: string | null
+          household_id?: string | null
           status?: string | null
           user_id?: string | null
         }
@@ -247,16 +247,16 @@ export type Database = {
           id?: string
           joined_at?: string | null
           left_at?: string | null
-          room_id?: string | null
+          household_id?: string | null
           status?: string | null
           user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "roommates_room_id_fkey"
-            columns: ["room_id"]
+            foreignKeyName: "roommates_household_id_fkey"
+            columns: ["household_id"]
             isOneToOne: false
-            referencedRelation: "rooms"
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
           {
@@ -268,7 +268,7 @@ export type Database = {
           },
         ]
       }
-      rooms: {
+      households: {
         Row: {
           address: string | null
           amenities: string[] | null
@@ -281,7 +281,7 @@ export type Database = {
           is_available: boolean | null
           name: string
           rent_amount: number | null
-          room_type: string | null
+          household_type: string | null
           updated_at: string | null
         }
         Insert: {
@@ -296,7 +296,7 @@ export type Database = {
           is_available?: boolean | null
           name: string
           rent_amount?: number | null
-          room_type?: string | null
+          household_type?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -311,12 +311,12 @@ export type Database = {
           is_available?: boolean | null
           name?: string
           rent_amount?: number | null
-          room_type?: string | null
+          household_type?: string | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "rooms_created_by_fkey"
+            foreignKeyName: "households_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
