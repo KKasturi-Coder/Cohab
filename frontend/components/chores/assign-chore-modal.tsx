@@ -10,7 +10,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { Chore, Profile, CreateChoreAssignmentInput } from '@/lib/graphql/types';
+import { Chore, Roommate, CreateChoreAssignmentInput } from '@/lib/graphql/types';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 interface AssignChoreModalProps {
@@ -18,7 +18,7 @@ interface AssignChoreModalProps {
   onClose: () => void;
   onSubmit: (data: CreateChoreAssignmentInput) => Promise<void>;
   chore: Chore | null;
-  roommates: Profile[];
+  roommates: Roommate[];
 }
 
 export function AssignChoreModal({
@@ -113,20 +113,20 @@ export function AssignChoreModal({
                     onPress={() => setSelectedUserId(roommate.id)}
                     disabled={isLoading}
                   >
-                    {roommate.avatarUrl ? (
+                    {roommate.profile.avatarUrl ? (
                       <Image
-                        source={{ uri: roommate.avatarUrl }}
+                        source={{ uri: roommate.profile.avatarUrl }}
                         style={styles.avatar}
                       />
                     ) : (
                       <View style={[styles.avatar, styles.avatarPlaceholder]}>
                         <Text style={styles.avatarText}>
-                          {roommate.fullName?.charAt(0).toUpperCase() || '?'}
+                          {roommate.profile.fullName?.charAt(0).toUpperCase() || '?'}
                         </Text>
                       </View>
                     )}
                     <Text style={styles.roommateName}>
-                      {roommate.fullName || 'Unknown'}
+                      {roommate.profile.fullName || 'Unknown'}
                     </Text>
                     {selectedUserId === roommate.id && (
                       <IconSymbol name="checkmark.circle.fill" size={24} color="#007AFF" />
@@ -332,5 +332,13 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 14,
     color: '#999',
+  },
+   roommatePoints: {
+    alignItems: 'flex-end',
+  },
+  roommatePointsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#7CB342',
   },
 });

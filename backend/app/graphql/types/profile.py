@@ -13,5 +13,6 @@ class Profile:
     full_name: Optional[str] = None
     avatar_url: Optional[str] = None
     bio: Optional[str] = None
+    points: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

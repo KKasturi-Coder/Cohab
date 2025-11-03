@@ -36,7 +36,7 @@ export interface Household {
   isAvailable: boolean;
   createdBy: string;
   inviteCode: string;
-  roommates?: Profile[];
+  roommates?: Roommate[];
   createdAt: string;
   updatedAt: string;
 }
@@ -44,10 +44,12 @@ export interface Household {
 export interface Roommate {
   id: string;
   userId: string;
+  profile: Profile;
   householdId: string;
   status: 'pending' | 'accepted' | 'rejected' | 'left';
   joinedAt: string;
   leftAt?: string;
+  points?: number;
 }
 
 // ==================== PROFILE TYPES ====================

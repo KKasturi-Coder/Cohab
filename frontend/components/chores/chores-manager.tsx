@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { Chore, ChoreAssignment, Profile } from '@/lib/graphql/types';
+import { Chore, ChoreAssignment, Roommate } from '@/lib/graphql/types';
 import { getHouseholdChores, getHouseholdChoreAssignments } from '@/lib/graphql/queries/chores';
 import {
   createChore,
@@ -28,7 +28,7 @@ import { auth } from '@/lib/supabase-helpers';
 
 interface ChoresManagerProps {
   householdId: string;
-  roommates: Profile[];
+  roommates: Roommate[];
 }
 
 type TabType = 'chores' | 'assignments';

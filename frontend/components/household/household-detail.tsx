@@ -161,27 +161,32 @@ export function HouseholdDetail({ household, onUpdate }: HouseholdDetailProps) {
           <View style={styles.roommatesList}>
             {household.roommates.map((roommate) => (
               <View key={roommate.id} style={styles.roommateCard}>
-                {roommate.avatarUrl ? (
+                {roommate.profile.avatarUrl ? (
                   <Image
-                    source={{ uri: roommate.avatarUrl }}
+                    source={{ uri: roommate.profile.avatarUrl }}
                     style={styles.avatar}
                   />
                 ) : (
                   <View style={[styles.avatar, styles.avatarPlaceholder]}>
                     <Text style={styles.avatarText}>
-                      {roommate.fullName?.charAt(0).toUpperCase() || '?'}
+                      {roommate.profile.fullName?.charAt(0).toUpperCase() || '?'}
                     </Text>
                   </View>
                 )}
                 <View style={styles.roommateInfo}>
                   <Text style={styles.roommateName}>
-                    {roommate.fullName || 'Unknown'}
+                    {roommate.profile.fullName || 'Unknown'}
                   </Text>
-                  {roommate.bio && (
+                  {roommate.profile.bio && (
                     <Text style={styles.roommateBio} numberOfLines={2}>
-                      {roommate.bio}
+                      {roommate.profile.bio}
                     </Text>
                   )}
+                </View>
+                <View style={styles.roommatePoints}>
+                  <Text style={styles.roommatePointsText}>
+                    ⭐ {roommate.points ?? 0} pts
+                  </Text>
                 </View>
               </View>
             ))}
@@ -420,6 +425,14 @@ const styles = StyleSheet.create({
   },
   roommateInfo: {
     flex: 1,
+  },
+  roommatePoints: {
+    alignItems: 'flex-end',
+  },
+  roommatePointsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#7CB342',
   },
   roommateName: {
     fontSize: 16,

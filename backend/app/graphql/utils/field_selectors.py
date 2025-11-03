@@ -120,6 +120,10 @@ def get_requested_db_fields(model_class: Type, info: Info | None = None) -> str:
     # Always include 'id' if it exists (required for most resolvers)
     if "id" in all_db_fields:
         requested_db_fields.add("id")
+        
+    # If profile is requested, make sure to include user_id for the relationship
+    if "profile" in requested_resolver_fields and "user_id" in all_db_fields:
+        requested_db_fields.add("user_id")
 
     # Auto-include FKs for resolver fields, but ONLY if the FK actually exists
     # This handles belongs-to relationships (e.g., subjectDepartment needs subject_department_id)

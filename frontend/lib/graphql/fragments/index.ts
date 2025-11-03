@@ -17,9 +17,14 @@ export const HOUSEHOLD_FIELDS = `
   inviteCode
   roommates {
     id
-    fullName
-    avatarUrl
-    bio
+    userId
+    profile {
+      id
+      fullName
+      avatarUrl
+      bio
+    }
+    points
   }
   createdAt
   updatedAt
