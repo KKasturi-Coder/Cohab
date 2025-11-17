@@ -1,3 +1,14 @@
+-- Create profiles table
+-- This table extends Supabase auth.users with additional profile information
+CREATE TABLE public.profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  email TEXT NOT NULL,
+  full_name TEXT,
+  avatar_url TEXT,
+  bio TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
 
 -- Create households/houses table
 CREATE TABLE public.households (
@@ -76,6 +87,7 @@ CREATE TABLE public.notifications (
 );
 
 -- Create indexes for better performance
+CREATE INDEX idx_profiles_email ON public.profiles(email);
 CREATE INDEX idx_roommates_user_id ON public.roommates(user_id);
 CREATE INDEX idx_roommates_household_id ON public.roommates(household_id);
 CREATE INDEX idx_expenses_household_id ON public.expenses(household_id);
