@@ -92,6 +92,4 @@ export const EXPENSE_SPLIT_FIELDS = `
   amount
   isPaid
   paidAt
-  paymentUrl
-  paymentMethod
 `;
