@@ -1,0 +1,75 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    name: Backend CI
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      run: pip install uv
+    
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: uv sync
+    
+    - name: Lint backend code
+      working-directory: ./backend
+      run: uv run python -m flake8 . || true
+    
+    - name: Type check backend
+      working-directory: ./backend
+      run: uv run python -m mypy . || true
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    name: Frontend CI
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Lint frontend code
+      working-directory: ./frontend
+      run: npm run lint
+    
+    - name: Type check frontend
+      working-directory: ./frontend
+      run: npx tsc --noEmit
+
+  deploy-backend:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [backend-test, frontend-test]
+    runs-on: ubuntu-latest
+    name: Deploy Backend
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Railway
+      run: |
+        echo "Backend deployment would happen here"
+        echo "Configure Railway CLI or API deployment as needed"
