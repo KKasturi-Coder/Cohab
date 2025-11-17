@@ -8,12 +8,14 @@ import Account from '../components/account/account'
 import Auth from '../components/auth/auth'
 import { supabase } from '../lib/supabase'
 import { userStatus } from '../lib/supabase-helpers'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const { height } = Dimensions.get('window')
 
 export default function SignUpScreen() {
   const [session, setSession] = useState<Session | null>(null)
   const [isCheckingHouse, setIsCheckingHouse] = useState(false)
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -74,7 +76,7 @@ export default function SignUpScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingTop: insets.top + 20 }]}>
         {session && session.user ? (
           <Account key={session.user.id} session={session} />
         ) : (

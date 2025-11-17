@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -17,6 +18,7 @@ export default function JoinCreateHouseScreen() {
   const [rentAmount, setRentAmount] = useState('');
   const [houseCode, setHouseCode] = useState('');
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     // Check if user is authenticated
@@ -141,7 +143,7 @@ export default function JoinCreateHouseScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20 }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <ThemedText type="title" style={styles.headerTitle}>
@@ -266,7 +268,6 @@ export default function JoinCreateHouseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
   },
   scrollContent: {
     paddingBottom: 40,
