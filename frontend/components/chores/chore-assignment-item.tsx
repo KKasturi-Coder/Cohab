@@ -107,8 +107,8 @@ export function ChoreAssignmentItem({
           </View>
         </View>
 
-        {!assignment.isComplete && (
-          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+        {!assignment.isComplete && isOwnAssignment && (
+          <TouchableOpacity onPress={handleDelete} style={styles.deleteButton} activeOpacity={0.7}>
             <IconSymbol name="xmark.circle.fill" size={20} color="#CD853F" />
           </TouchableOpacity>
         )}
@@ -130,29 +130,34 @@ export function ChoreAssignmentItem({
 
         <View style={styles.badges}>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>⭐ {assignment.chore.points} pts</Text>
+            <IconSymbol name="star.fill" size={12} color="#FFC125" />
+            <Text style={styles.badgeText}>{assignment.chore.points} pts</Text>
           </View>
           <View style={[styles.badge, isOverdue && styles.badgeOverdue]}>
+            <IconSymbol
+              name={isOverdue ? 'exclamationmark.triangle.fill' : 'calendar'}
+              size={12}
+              color={isOverdue ? '#CD853F' : '#FFC125'}
+            />
             <Text style={[styles.badgeText, isOverdue && styles.badgeTextOverdue]}>
-              {isOverdue ? '⚠️ Overdue' : '📅'}
-              {' '}
-              {dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {isOverdue ? 'Overdue' : dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </Text>
           </View>
         </View>
       </View>
 
       {isOwnAssignment && !assignment.isComplete && (
-        <TouchableOpacity style={styles.completeButton} onPress={handleComplete}>
-          <IconSymbol name="checkmark.circle" size={20} color="#FFFFFF" />
+        <TouchableOpacity style={styles.completeButton} onPress={handleComplete} activeOpacity={0.8}>
+          <IconSymbol name="checkmark.circle.fill" size={20} color="#000000" />
           <Text style={styles.completeButtonText}>Mark Complete</Text>
         </TouchableOpacity>
       )}
 
       {assignment.isComplete && assignment.completedAt && (
         <View style={styles.completedInfo}>
+          <IconSymbol name="checkmark.circle.fill" size={16} color="#FFC125" />
           <Text style={styles.completedText}>
-            ✅ Completed{' '}
+            Completed{' '}
             {new Date(assignment.completedAt).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
@@ -167,12 +172,12 @@ export function ChoreAssignmentItem({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#1A1A1A',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
@@ -188,12 +193,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
+    gap: 12,
   },
   choreInfo: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     flex: 1,
-    gap: 8,
+    gap: 10,
   },
   completeBadge: {
     marginTop: 2,
@@ -203,7 +209,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFC125',
     marginBottom: 4,
   },
@@ -212,8 +218,9 @@ const styles = StyleSheet.create({
     color: '#8B8B8B',
   },
   description: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#D4AF37',
+    lineHeight: 18,
   },
   deleteButton: {
     padding: 4,
@@ -227,50 +234,53 @@ const styles = StyleSheet.create({
   assignee: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   avatarPlaceholder: {
     backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#FFC125',
   },
   avatarText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#FFC125',
   },
   assigneeName: {
     fontSize: 14,
     color: '#D4AF37',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   badges: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   badge: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 193, 37, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 193, 37, 0.3)',
   },
   badgeOverdue: {
-    backgroundColor: '#1E293B',
-    borderColor: 'rgba(205, 133, 63, 0.5)',
+    backgroundColor: 'rgba(205, 133, 63, 0.1)',
+    borderColor: 'rgba(205, 133, 63, 0.4)',
   },
   badgeText: {
     fontSize: 12,
     color: '#FFC125',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   badgeTextOverdue: {
     color: '#CD853F',
@@ -279,27 +289,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E3A8A',
-    borderRadius: 8,
-    paddingVertical: 12,
+    backgroundColor: '#FFC125',
+    borderRadius: 12,
+    paddingVertical: 14,
     gap: 8,
-    borderWidth: 2,
-    borderColor: '#FFC125',
+    marginTop: 4,
   },
   completeButtonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#FFC125',
+    fontWeight: '700',
+    color: '#000000',
   },
   completedInfo: {
-    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 193, 37, 0.2)',
+    marginTop: 4,
   },
   completedText: {
     fontSize: 14,
     color: '#FFC125',
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: '600',
   },
 });

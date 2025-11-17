@@ -6,12 +6,10 @@ import { completeChoreAssignment } from '@/lib/graphql/mutations/chores';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View, Alert, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { ChoreAssignmentItem } from '@/components/chores/chore-assignment-item';
-
-const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
@@ -19,6 +17,7 @@ export default function DashboardScreen() {
   const [currentDate, setCurrentDate] = useState('');
   const [houseInfo, setHouseInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [myChores, setMyChores] = useState<ChoreAssignment[]>([]);
   const [choreStats, setChoreStats] = useState({ pastDue: 0, toDo: 0, done: 0 });
@@ -51,7 +50,7 @@ export default function DashboardScreen() {
         // Get user's chore assignments if they have a household
         if (houseData?.id) {
           try {
-            const assignments = await getMyChoreAssignments(houseData.id, true);
+            const assignments = await getMyChoreAssignments(houseData.id, false);
             setMyChores(assignments);
 
             // Calculate chore statistics
@@ -86,6 +85,12 @@ export default function DashboardScreen() {
     }
   }, []);
 
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await loadDashboardData();
+    setIsRefreshing(false);
+  }, [loadDashboardData]);
+
   useEffect(() => {
     // Check authentication first
     const checkAuth = async () => {
@@ -113,7 +118,7 @@ export default function DashboardScreen() {
   const handleCompleteChore = async (assignmentId: string) => {
     try {
       await completeChoreAssignment({ assignmentId });
-      // Refresh the dashboard data to show updated chore status
+      Alert.alert('Success', 'Chore completed! 🎉');
       await loadDashboardData();
     } catch (error) {
       console.error('Error completing chore:', error);
@@ -121,169 +126,250 @@ export default function DashboardScreen() {
     }
   };
 
-
   if (isCheckingAuth || loading) {
     return (
       <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFC125" />
-          <ThemedText>Loading dashboard...</ThemedText>
+          <ThemedText style={styles.loadingText}>Loading dashboard...</ThemedText>
         </View>
       </LinearGradient>
     );
   }
 
+  // Group chores by status
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const overdueChores = myChores.filter((a) => {
+    if (a.isComplete) return false;
+    const dueDate = new Date(a.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate < today;
+  });
+
+  const dueTodayChores = myChores.filter((a) => {
+    if (a.isComplete) return false;
+    const dueDate = new Date(a.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate.getTime() === today.getTime();
+  });
+
+  const upcomingChores = myChores.filter((a) => {
+    if (a.isComplete) return false;
+    const dueDate = new Date(a.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate > today;
+  }).slice(0, 3);
+
+  const totalPending = overdueChores.length + dueTodayChores.length + upcomingChores.length;
+
   return (
     <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
       <ScrollView 
         style={styles.scrollView} 
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 20 }]}
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[0]}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />}
       >
-        {/* Sticky Header */}
-        <View style={styles.stickyHeader}>
-          <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-            <TouchableOpacity style={styles.headerButton}>
-              <IconSymbol name="gearshape.fill" size={24} color="#FFC125" />
-            </TouchableOpacity>
-            
-            <View style={styles.logoContainer}>
-              <ThemedText style={styles.logoText}>
-                <ThemedText style={styles.logoGold}>Co</ThemedText>
-                <ThemedText style={styles.logoDarkBlue}>hab</ThemedText>
-              </ThemedText>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <View>
+              <ThemedText style={styles.greeting}>Hey {userName} 👋</ThemedText>
+              <ThemedText style={styles.date}>{currentDate}</ThemedText>
             </View>
-            
-            <TouchableOpacity style={styles.headerButton}>
-              <IconSymbol name="bubble.left.and.bubble.right.fill" size={24} color="#FFC125" />
+            <TouchableOpacity
+              style={styles.settingsButton}
+              onPress={() => router.push('/(tabs)/profile')}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="gearshape.fill" size={22} color="#FFC125" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Greeting */}
-        <View style={styles.greetingContainer}>
-          <ThemedText style={styles.greeting}>
-            Hey {userName} 👋
-          </ThemedText>
-          <ThemedText style={styles.date}>{currentDate}</ThemedText>
-        </View>
+        {/* Quick Stats */}
+        <View style={styles.statsContainer}>
+          <TouchableOpacity
+            style={[styles.statCard, styles.pastDueCard]}
+            onPress={() => router.push('/chores/assignments?filter=overdue')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.statIconContainer}>
+              <IconSymbol name="exclamationmark.triangle.fill" size={24} color="#CD853F" />
+            </View>
+            <ThemedText style={styles.statNumber}>{choreStats.pastDue}</ThemedText>
+            <ThemedText style={styles.statLabel}>Past Due</ThemedText>
+          </TouchableOpacity>
 
-        {/* Task Overview Cards */}
-        <View style={styles.cardsContainer}>
-          <View style={styles.cardRow}>
-            <View style={[styles.taskCard, styles.pastDueCard]}>
-              <ThemedText style={styles.cardTitle}>Past Due</ThemedText>
-              <ThemedText style={styles.cardNumber}>{choreStats.pastDue}</ThemedText>
+          <TouchableOpacity
+            style={[styles.statCard, styles.toDoCard]}
+            onPress={() => router.push('/chores/assignments')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.statIconContainer}>
+              <IconSymbol name="list.bullet.clipboard" size={24} color="#FFC125" />
             </View>
-            <View style={[styles.taskCard, styles.toDoCard]}>
-              <ThemedText style={styles.cardTitle}>To-do</ThemedText>
-              <ThemedText style={styles.cardNumber}>{choreStats.toDo}</ThemedText>
+            <ThemedText style={styles.statNumber}>{choreStats.toDo}</ThemedText>
+            <ThemedText style={styles.statLabel}>To-do</ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.statCard, styles.doneCard]}
+            onPress={() => router.push('/chores/assignments')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.statIconContainer}>
+              <IconSymbol name="checkmark.circle.fill" size={24} color="#FFC125" />
             </View>
-            <View style={[styles.taskCard, styles.doneCard]}>
-              <ThemedText style={styles.cardTitle}>Done</ThemedText>
-              <ThemedText style={styles.cardNumber}>{choreStats.done}</ThemedText>
-            </View>
+            <ThemedText style={styles.statNumber}>{choreStats.done}</ThemedText>
+            <ThemedText style={styles.statLabel}>Done</ThemedText>
+          </TouchableOpacity>
           </View>
+
+        {/* Quick Actions */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push('/chores/assignments')}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="checkmark.circle" size={20} color="#FFC125" />
+            <ThemedText style={styles.actionText}>My Chores</ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="#8B8B8B" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => router.push('/(tabs)/expenses')}
+            activeOpacity={0.8}
+          >
+            <IconSymbol name="dollarsign.circle" size={20} color="#FFC125" />
+            <ThemedText style={styles.actionText}>Expenses</ThemedText>
+            <IconSymbol name="chevron.right" size={16} color="#8B8B8B" />
+          </TouchableOpacity>
         </View>
 
         {/* My Chores Section */}
-        {myChores.length > 0 && (
-          <View style={styles.sectionContainer}>
-            <ThemedText style={styles.sectionTitle}>My Chores</ThemedText>
-            {myChores.filter(c => !c.isComplete).slice(0, 5).map((assignment) => {
-              const dueDate = new Date(assignment.dueDate);
-              const now = new Date();
-              const diffMs = dueDate.getTime() - now.getTime();
-              const isPast = diffMs < 0;
-              const absDiffMs = Math.abs(diffMs);
-              
-              // Convert to various time units
-              const minutes = Math.floor(absDiffMs / (1000 * 60));
-              const hours = Math.floor(minutes / 60);
-              const days = Math.floor(hours / 24);
-              const months = Math.floor(days / 30);
-              const years = Math.floor(months / 12);
-              
-              // Determine the most appropriate unit to display
-              let relativeTime = '';
-              if (years > 0) {
-                relativeTime = `${years}y`;
-              } else if (months > 0) {
-                relativeTime = `${months}mo`;
-              } else if (days > 0) {
-                relativeTime = `${days}d`;
-              } else if (hours > 0) {
-                relativeTime = `${hours}h`;
-              } else if (minutes > 0) {
-                relativeTime = `${minutes}m`;
-              } else {
-                relativeTime = 'now';
-              }
-              
-              // For dates in the future, show "in X" format, for past show "X ago"
-              const timeString = isPast ? `${relativeTime} ago` : `in ${relativeTime}`;
-              
-              // For dates within the same day, show time, otherwise show date
-              const isSameDay = dueDate.toDateString() === now.toDateString();
-              const timeFormat = isSameDay 
-                ? { hour: 'numeric', minute: '2-digit' }
-                : { month: 'short', day: 'numeric' };
-              
-              const formattedDate = isSameDay 
-                ? dueDate.toLocaleTimeString('en-US', timeFormat as any)
-                : dueDate.toLocaleDateString('en-US', timeFormat as any);
-                
-              // For the status calculation (keep using date-only comparison)
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              const dueDateOnly = new Date(dueDate);
-              dueDateOnly.setHours(0, 0, 0, 0);
-              const isPastDue = dueDateOnly < today;
-              const isDueToday = dueDateOnly.getTime() === today.getTime();
-              
-              // Determine the status and colors
-              let status = 'upcoming';
-              let iconColor = '#FFC125'; // Rich gold for upcoming
-              let iconName = assignment.chore.requiresProof ? "camera.fill" : "checkmark.circle.fill";
-              
-              if (isPastDue) {
-                status = 'overdue';
-                iconColor = '#CD853F'; // Perennial gold for overdue
-                iconName = 'exclamationmark.triangle';
-              } else if (isDueToday) {
-                status = 'dueToday';
-                iconColor = '#D4AF37'; // Metallic gold for due today
-                iconName = 'bell';
-              }
-              
-              return (
+        {totalPending > 0 ? (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <ThemedText style={styles.sectionTitle}>My Tasks</ThemedText>
+              <TouchableOpacity onPress={() => router.push('/chores/assignments')}>
+                <ThemedText style={styles.seeAllText}>See All</ThemedText>
+              </TouchableOpacity>
+            </View>
+
+            {overdueChores.length > 0 && (
+              <View style={styles.choreGroup}>
+                <View style={styles.groupHeader}>
+                  <IconSymbol name="exclamationmark.triangle.fill" size={16} color="#CD853F" />
+                  <ThemedText style={styles.groupTitle}>Overdue ({overdueChores.length})</ThemedText>
+                </View>
+                {overdueChores.slice(0, 2).map((assignment) => (
+                  <ChoreAssignmentItem
+                    key={assignment.id}
+                    assignment={assignment}
+                    onComplete={handleCompleteChore}
+                    onDelete={() => {}}
+                    isOwnAssignment={true}
+                  />
+                ))}
+              </View>
+            )}
+
+            {dueTodayChores.length > 0 && (
+              <View style={styles.choreGroup}>
+                <View style={styles.groupHeader}>
+                  <IconSymbol name="bell.fill" size={16} color="#D4AF37" />
+                  <ThemedText style={styles.groupTitle}>Due Today ({dueTodayChores.length})</ThemedText>
+                </View>
+                {dueTodayChores.slice(0, 2).map((assignment) => (
+                  <ChoreAssignmentItem
+                    key={assignment.id}
+                    assignment={assignment}
+                    onComplete={handleCompleteChore}
+                    onDelete={() => {}}
+                    isOwnAssignment={true}
+                  />
+                ))}
+              </View>
+            )}
+
+            {upcomingChores.length > 0 && (
+              <View style={styles.choreGroup}>
+                <View style={styles.groupHeader}>
+                  <IconSymbol name="calendar" size={16} color="#FFC125" />
+                  <ThemedText style={styles.groupTitle}>Upcoming</ThemedText>
+                </View>
+                {upcomingChores.map((assignment) => (
                 <ChoreAssignmentItem
                   key={assignment.id}
                   assignment={assignment}
                   onComplete={handleCompleteChore}
-                  onDelete={() => {}} // Not used in dashboard
+                    onDelete={() => {}}
                   isOwnAssignment={true}
                 />
-              );
-            })}
+                ))}
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={styles.emptyChoresSection}>
+            <View style={styles.emptyState}>
+              <IconSymbol name="checkmark.circle" size={64} color="#8B8B8B" />
+              <ThemedText style={styles.emptyStateText}>All caught up! 🎉</ThemedText>
+              <ThemedText style={styles.emptyStateHint}>
+                You don't have any pending tasks right now
+              </ThemedText>
+              <TouchableOpacity
+                style={styles.emptyStateButton}
+                onPress={() => router.push('/chores/all')}
+                activeOpacity={0.8}
+              >
+                <ThemedText style={styles.emptyStateButtonText}>Browse Chores</ThemedText>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
-        {/* Financial Overview Cards */}
-        <View style={styles.cardsContainer}>
-          <View style={styles.cardRow}>
-            <View style={[styles.expenseCard, styles.oweCard]}>
-              <ThemedText style={styles.cardTitle}>You Owe</ThemedText>
-              <ThemedText style={styles.cardNumber}>$0.00</ThemedText>
+        {/* Financial Overview */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle}>Expenses</ThemedText>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/expenses')}>
+              <ThemedText style={styles.seeAllText}>See All</ThemedText>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.expenseCards}>
+            <TouchableOpacity
+              style={[styles.expenseCard, styles.oweCard]}
+              onPress={() => router.push('/(tabs)/expenses')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.expenseCardHeader}>
+                <IconSymbol name="arrow.down.circle.fill" size={24} color="#CD853F" />
+                <ThemedText style={styles.expenseCardTitle}>You Owe</ThemedText>
             </View>
-            <View style={[styles.expenseCard, styles.owedCard]}>
-              <ThemedText style={styles.cardTitle}>You're Owed</ThemedText>
-              <ThemedText style={styles.cardNumber}>$0.00</ThemedText>
+              <ThemedText style={styles.expenseCardAmount}>$0.00</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.expenseCard, styles.owedCard]}
+              onPress={() => router.push('/(tabs)/expenses')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.expenseCardHeader}>
+                <IconSymbol name="arrow.up.circle.fill" size={24} color="#FFC125" />
+                <ThemedText style={styles.expenseCardTitle}>You're Owed</ThemedText>
             </View>
+              <ThemedText style={styles.expenseCardAmount}>$0.00</ThemedText>
+            </TouchableOpacity>
           </View>
         </View>
-        {/* Bottom padding for last item */}
-        <View style={{ height: 20 }} />
+
+        <View style={{ height: 40 }} />
       </ScrollView>
     </LinearGradient>
   );
@@ -293,204 +379,218 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  stickyHeader: {
-    backgroundColor: '#000000',
-    shadowColor: 'transparent',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255, 193, 37, 0.3)',
-  },
   scrollView: {
     flex: 1,
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(30, 58, 138, 0.3)',
-    borderRadius: 14,
-    shadowColor: '#FFC125',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  logoContainer: {
-    alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  logoGold: {
-    color: '#FFC125',
-    fontWeight: '800',
-  },
-  logoDarkBlue: {
-    color: '#1E3A8A',
-    fontWeight: '800',
-  },
-  greetingContainer: {
-    paddingHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  greeting: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  date: {
+  loadingText: {
+    marginTop: 12,
     fontSize: 16,
     color: '#D4AF37',
   },
-  cardsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+  header: {
+    marginBottom: 24,
   },
-  cardRow: {
+  headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  taskCard: {
-    flex: 1,
-    marginHorizontal: 4,
-    padding: 16,
-    borderRadius: 12,
+  greeting: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFC125',
+    marginBottom: 4,
+    letterSpacing: -0.5,
+  },
+  date: {
+    fontSize: 14,
+    color: '#D4AF37',
+    fontWeight: '500',
+  },
+  settingsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 193, 37, 0.1)',
+    justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   pastDueCard: {
-    backgroundColor: '#CD853F',
+    borderColor: 'rgba(205, 133, 63, 0.4)',
   },
   toDoCard: {
-    backgroundColor: '#D4AF37',
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   doneCard: {
+    borderColor: 'rgba(255, 193, 37, 0.2)',
+  },
+  statIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 193, 37, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFC125',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#D4AF37',
+    fontWeight: '500',
+  },
+  actionsContainer: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
+    gap: 12,
+  },
+  actionText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFC125',
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFC125',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#D4AF37',
+    fontWeight: '500',
+  },
+  choreGroup: {
+    marginBottom: 20,
+  },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  groupTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFC125',
+  },
+  emptyChoresSection: {
+    marginBottom: 24,
+  },
+  emptyState: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#D4AF37',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateHint: {
+    fontSize: 14,
+    color: '#8B8B8B',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  emptyStateButton: {
     backgroundColor: '#FFC125',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  emptyStateButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  expenseCards: {
+    flexDirection: 'row',
+    gap: 12,
   },
   expenseCard: {
     flex: 1,
-    marginHorizontal: 4,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
     padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   oweCard: {
-    backgroundColor: '#1E3A8A',
+    borderColor: 'rgba(205, 133, 63, 0.4)',
   },
   owedCard: {
-    backgroundColor: '#1E40AF',
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  cardNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  sectionContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFC125',
-    marginBottom: 12,
-  },
-  choreCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+  expenseCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
     marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  choreIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  choreTodoIcon: {
-    backgroundColor: '#F0F8E8',
-  },
-  chorePastDueIcon: {
-    backgroundColor: '#FFE8E8',
-  },
-  choreDueTodayIcon: {
-    backgroundColor: '#FFF3E0',
-  },
-  choreInfo: {
-    flex: 1,
-  },
-  choreTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2C2C2C',
-    marginBottom: 4,
-  },
-  choreDueDate: {
+  expenseCardTitle: {
     fontSize: 14,
-    color: '#666666',
-  },
-  choreDueDateOverdue: {
-    color: '#FF3B30',
-    fontWeight: '500',
-  },
-  choreDueDateDueToday: {
-    color: '#FF9500',
-    fontWeight: '500',
-  },
-  chorePoints: {
-    backgroundColor: '#7CB342',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  chorePointsText: {
-    color: '#FFFFFF',
-    fontSize: 12,
     fontWeight: '600',
+    color: '#D4AF37',
+  },
+  expenseCardAmount: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFC125',
   },
 });

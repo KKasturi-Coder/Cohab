@@ -17,10 +17,10 @@ interface ChoreListItemProps {
 }
 
 const RECURRENCE_ICONS: Record<string, string> = {
-  none: '📅',
-  daily: '🌅',
-  weekly: '📆',
-  monthly: '🗓️',
+  none: 'calendar',
+  daily: 'sun.max.fill',
+  weekly: 'calendar.badge.clock',
+  monthly: 'calendar',
 };
 
 const RECURRENCE_LABELS: Record<string, string> = {
@@ -47,91 +47,135 @@ export function ChoreListItem({ chore, onEdit, onDelete, onAssign }: ChoreListIt
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      activeOpacity={0.7}
+      onPress={() => onAssign(chore)}
+    >
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>{chore.title}</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{chore.title}</Text>
+            {chore.description && (
+              <Text style={styles.description} numberOfLines={1}>
+                {chore.description}
+              </Text>
+            )}
+          </View>
           <View style={styles.actions}>
-            <TouchableOpacity onPress={() => onAssign(chore)} style={styles.actionButton}>
-              <IconSymbol name="person.badge.plus" size={20} color="#FFC125" />
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onAssign(chore);
+              }}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="person.badge.plus" size={18} color="#FFC125" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onEdit(chore)} style={styles.actionButton}>
-              <IconSymbol name="pencil" size={20} color="#FFC125" />
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onEdit(chore);
+              }}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="pencil" size={18} color="#FFC125" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleDelete} style={styles.actionButton}>
-              <IconSymbol name="trash" size={20} color="#CD853F" />
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+              style={styles.actionButton}
+              activeOpacity={0.7}
+            >
+              <IconSymbol name="trash" size={18} color="#CD853F" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {chore.description && (
-          <Text style={styles.description} numberOfLines={2}>
-            {chore.description}
-          </Text>
-        )}
-
         <View style={styles.footer}>
           <View style={styles.badges}>
             <View style={styles.badge}>
+              <IconSymbol
+                name={RECURRENCE_ICONS[chore.recurrence] as any}
+                size={14}
+                color="#FFC125"
+              />
               <Text style={styles.badgeText}>
-                {RECURRENCE_ICONS[chore.recurrence]} {RECURRENCE_LABELS[chore.recurrence]}
+                {RECURRENCE_LABELS[chore.recurrence]}
               </Text>
             </View>
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>⭐ {chore.points} pts</Text>
+              <IconSymbol name="star.fill" size={14} color="#FFC125" />
+              <Text style={styles.badgeText}>{chore.points} pts</Text>
             </View>
             {chore.requiresProof && (
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>📸 Proof required</Text>
+                <IconSymbol name="camera.fill" size={14} color="#FFC125" />
+                <Text style={styles.badgeText}>Proof</Text>
               </View>
             )}
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#1A1A1A',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 3,
     borderWidth: 1,
     borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   content: {
-    gap: 8,
+    gap: 12,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: 12,
+  },
+  titleContainer: {
+    flex: 1,
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#FFC125',
-    flex: 1,
-    marginRight: 8,
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 13,
+    color: '#D4AF37',
+    lineHeight: 18,
   },
   actions: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 8,
+    alignItems: 'center',
   },
   actionButton: {
-    padding: 4,
-  },
-  description: {
-    fontSize: 14,
-    color: '#D4AF37',
-    lineHeight: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 193, 37, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
   },
   footer: {
     marginTop: 4,
@@ -139,19 +183,22 @@ const styles = StyleSheet.create({
   badges: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
   },
   badge: {
-    backgroundColor: '#0F172A',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 193, 37, 0.1)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: 'rgba(255, 193, 37, 0.3)',
   },
   badgeText: {
     fontSize: 12,
     color: '#FFC125',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
