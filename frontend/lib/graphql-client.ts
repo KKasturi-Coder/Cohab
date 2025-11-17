@@ -31,6 +31,13 @@ export type {
   UpdateChoreInput,
   CreateChoreAssignmentInput,
   CompleteChoreAssignmentInput,
+  CreateExpenseInput,
+  UpdateExpenseInput,
+  MarkExpensePaidInput,
+  GeneratePaymentURLInput,
+  Expense,
+  ExpenseSplit,
+  PaymentURLResult,
 } from './graphql/types';
 
 // ==================== QUERY EXPORTS ====================
@@ -46,6 +53,13 @@ export {
   getHouseholdChoreAssignments,
 } from './graphql/queries/chores';
 
+export {
+  getMyExpenses,
+  getHouseholdExpenses,
+  getExpenseSplits,
+  getExpense,
+} from './graphql/queries/expenses';
+
 // ==================== MUTATION EXPORTS ====================
 export {
   createHousehold,
@@ -58,6 +72,14 @@ export {
 export {
   updateProfile,
 } from './graphql/mutations/profiles';
+
+export {
+  createExpense,
+  updateExpense,
+  deleteExpense,
+  markExpensePaid,
+  generatePaymentURL,
+} from './graphql/mutations/expenses';
 
 // ==================== HELPER EXPORTS ====================
 export {

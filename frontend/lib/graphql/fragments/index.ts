@@ -35,6 +35,11 @@ export const PROFILE_FIELDS = `
   fullName
   avatarUrl
   bio
+  venmoHandle
+  paypalEmail
+  cashappHandle
+  zelleEmail
+  preferredPaymentMethod
   createdAt
   updatedAt
 `;
@@ -65,4 +70,28 @@ export const CHORE_ASSIGNMENT_FIELDS = `
   completedAt
   proofUrl
   createdAt
+`;
+
+export const EXPENSE_FIELDS = `
+  id
+  householdId
+  title
+  description
+  amount
+  currency
+  category
+  paidBy
+  createdAt
+  dueDate
+`;
+
+export const EXPENSE_SPLIT_FIELDS = `
+  id
+  expenseId
+  userId
+  amount
+  isPaid
+  paidAt
+  paymentUrl
+  paymentMethod
 `;

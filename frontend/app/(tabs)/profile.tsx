@@ -24,6 +24,14 @@ export default function ProfileScreen() {
   const [editedBio, setEditedBio] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   
+  // Payment settings
+  const [showPaymentSettings, setShowPaymentSettings] = useState(false);
+  const [venmoHandle, setVenmoHandle] = useState('');
+  const [paypalEmail, setPaypalEmail] = useState('');
+  const [cashappHandle, setCashappHandle] = useState('');
+  const [zelleEmail, setZelleEmail] = useState('');
+  const [preferredMethod, setPreferredMethod] = useState<'venmo' | 'paypal' | 'cashapp' | 'zelle' | null>(null);
+  
   const avatarScale = useSharedValue(0);
   
   const animatedAvatarStyle = useAnimatedStyle(() => {
@@ -51,6 +59,22 @@ export default function ProfileScreen() {
         setUserBio(bio);
         setEditedName(name);
         setEditedBio(bio);
+        
+        // Load payment settings from profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('venmo_handle, paypal_email, cashapp_handle, zelle_email, preferred_payment_method')
+          .eq('id', user.id)
+          .single();
+        
+        if (profileData) {
+          const profile = profileData as any;
+          setVenmoHandle(profile.venmo_handle || '');
+          setPaypalEmail(profile.paypal_email || '');
+          setCashappHandle(profile.cashapp_handle || '');
+          setZelleEmail(profile.zelle_email || '');
+          setPreferredMethod(profile.preferred_payment_method || null);
+        }
       }
       
       setIsCheckingAuth(false);
@@ -105,6 +129,42 @@ export default function ProfileScreen() {
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to update profile');
       console.error('Profile update error:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSavePaymentSettings = async () => {
+    // Validate at least one payment method is set
+    if (!venmoHandle && !paypalEmail && !cashappHandle && !zelleEmail) {
+      Alert.alert('Info', 'Add at least one payment method so roommates can pay you.');
+      return;
+    }
+
+    // Validate preferred method is set if user has methods
+    const hasMethod = venmoHandle || paypalEmail || cashappHandle || zelleEmail;
+    if (hasMethod && !preferredMethod) {
+      Alert.alert('Select Preferred Method', 'Choose which payment app you prefer to use.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const result = await updateProfile({
+        venmoHandle: venmoHandle || undefined,
+        paypalEmail: paypalEmail || undefined,
+        cashappHandle: cashappHandle || undefined,
+        zelleEmail: zelleEmail || undefined,
+        preferredPaymentMethod: preferredMethod || undefined,
+      });
+
+      if (result) {
+        setShowPaymentSettings(false);
+        Alert.alert('Success', 'Payment settings updated! Roommates can now pay you.');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to update payment settings');
+      console.error('Payment settings error:', error);
     } finally {
       setIsSaving(false);
     }
@@ -235,6 +295,149 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </>
           )}
+        </Animated.View>
+
+        {/* Payment Settings */}
+        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+          <TouchableOpacity
+            style={styles.settingsCard}
+            onPress={() => setShowPaymentSettings(!showPaymentSettings)}
+          >
+            <View style={styles.settingsHeader}>
+              <View style={styles.settingsHeaderLeft}>
+                <IconSymbol name="dollarsign.circle.fill" size={24} color="#FFC125" />
+                <ThemedText style={styles.settingsTitle}>Payment Settings</ThemedText>
+              </View>
+              <IconSymbol 
+                name={showPaymentSettings ? "chevron.up" : "chevron.down"} 
+                size={20} 
+                color="#FFC125" 
+              />
+            </View>
+            
+            {showPaymentSettings && (
+              <View style={styles.paymentContent}>
+                <ThemedText style={styles.paymentDescription}>
+                  Add your payment info so roommates can easily pay you back for shared expenses.
+                </ThemedText>
+                
+                {/* Venmo */}
+                <View style={styles.paymentInputGroup}>
+                  <ThemedText style={styles.paymentLabel}>💜 Venmo Username</ThemedText>
+                  <TextInput
+                    style={styles.paymentInput}
+                    value={venmoHandle}
+                    onChangeText={(text) => setVenmoHandle(text.replace('@', ''))}
+                    placeholder="johndoe (without @)"
+                    placeholderTextColor="#666"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* PayPal */}
+                <View style={styles.paymentInputGroup}>
+                  <ThemedText style={styles.paymentLabel}>💙 PayPal Email</ThemedText>
+                  <TextInput
+                    style={styles.paymentInput}
+                    value={paypalEmail}
+                    onChangeText={setPaypalEmail}
+                    placeholder="john@example.com"
+                    placeholderTextColor="#666"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Cash App */}
+                <View style={styles.paymentInputGroup}>
+                  <ThemedText style={styles.paymentLabel}>💚 Cash App $Cashtag</ThemedText>
+                  <TextInput
+                    style={styles.paymentInput}
+                    value={cashappHandle}
+                    onChangeText={(text) => setCashappHandle(text.replace('$', ''))}
+                    placeholder="johndoe (without $)"
+                    placeholderTextColor="#666"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Zelle */}
+                <View style={styles.paymentInputGroup}>
+                  <ThemedText style={styles.paymentLabel}>⚡ Zelle Email/Phone</ThemedText>
+                  <TextInput
+                    style={styles.paymentInput}
+                    value={zelleEmail}
+                    onChangeText={setZelleEmail}
+                    placeholder="john@example.com or phone"
+                    placeholderTextColor="#666"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                {/* Preferred Method */}
+                {(venmoHandle || paypalEmail || cashappHandle || zelleEmail) && (
+                  <View style={styles.paymentInputGroup}>
+                    <ThemedText style={styles.paymentLabel}>⭐ Preferred Method</ThemedText>
+                    <View style={styles.preferredMethodButtons}>
+                      {venmoHandle && (
+                        <TouchableOpacity
+                          style={[styles.methodButton, preferredMethod === 'venmo' && styles.methodButtonActive]}
+                          onPress={() => setPreferredMethod('venmo')}
+                        >
+                          <ThemedText style={[styles.methodButtonText, preferredMethod === 'venmo' && styles.methodButtonTextActive]}>
+                            Venmo
+                          </ThemedText>
+                        </TouchableOpacity>
+                      )}
+                      {paypalEmail && (
+                        <TouchableOpacity
+                          style={[styles.methodButton, preferredMethod === 'paypal' && styles.methodButtonActive]}
+                          onPress={() => setPreferredMethod('paypal')}
+                        >
+                          <ThemedText style={[styles.methodButtonText, preferredMethod === 'paypal' && styles.methodButtonTextActive]}>
+                            PayPal
+                          </ThemedText>
+                        </TouchableOpacity>
+                      )}
+                      {cashappHandle && (
+                        <TouchableOpacity
+                          style={[styles.methodButton, preferredMethod === 'cashapp' && styles.methodButtonActive]}
+                          onPress={() => setPreferredMethod('cashapp')}
+                        >
+                          <ThemedText style={[styles.methodButtonText, preferredMethod === 'cashapp' && styles.methodButtonTextActive]}>
+                            Cash App
+                          </ThemedText>
+                        </TouchableOpacity>
+                      )}
+                      {zelleEmail && (
+                        <TouchableOpacity
+                          style={[styles.methodButton, preferredMethod === 'zelle' && styles.methodButtonActive]}
+                          onPress={() => setPreferredMethod('zelle')}
+                        >
+                          <ThemedText style={[styles.methodButtonText, preferredMethod === 'zelle' && styles.methodButtonTextActive]}>
+                            Zelle
+                          </ThemedText>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                )}
+
+                {/* Save Button */}
+                <TouchableOpacity
+                  style={[styles.savePaymentButton, isSaving && styles.savePaymentButtonDisabled]}
+                  onPress={handleSavePaymentSettings}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <ActivityIndicator size="small" color="#000" />
+                  ) : (
+                    <ThemedText style={styles.savePaymentButtonText}>Save Payment Settings</ThemedText>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </TouchableOpacity>
         </Animated.View>
 
         {/* Logout Button */}
@@ -431,6 +634,98 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  settingsCard: {
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.2)',
+  },
+  settingsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  settingsHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  settingsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFC125',
+  },
+  paymentContent: {
+    marginTop: 20,
+  },
+  paymentDescription: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  paymentInputGroup: {
+    marginBottom: 16,
+  },
+  paymentLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFC125',
+    marginBottom: 8,
+  },
+  paymentInput: {
+    backgroundColor: '#000',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#FFF',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 37, 0.3)',
+  },
+  preferredMethodButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  methodButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#2A2A2A',
+    borderWidth: 1,
+    borderColor: '#555',
+  },
+  methodButtonActive: {
+    backgroundColor: '#FFC125',
+    borderColor: '#FFC125',
+  },
+  methodButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  methodButtonTextActive: {
+    color: '#000',
+  },
+  savePaymentButton: {
+    backgroundColor: '#FFC125',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  savePaymentButtonDisabled: {
+    opacity: 0.6,
+  },
+  savePaymentButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

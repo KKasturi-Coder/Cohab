@@ -4,6 +4,7 @@ from .create_expense import create_expense
 from .update_expense import update_expense
 from .mark_expense_paid import mark_expense_paid
 from .delete_expense import delete_expense
+from .generate_payment_url import generate_payment_url
 
 
 @strawberry.type
@@ -14,6 +15,7 @@ class ExpenseMutations:
     update_expense = update_expense
     mark_expense_paid = mark_expense_paid
     delete_expense = delete_expense
+    generate_payment_url = generate_payment_url
 
 
 __all__ = [
@@ -22,4 +24,5 @@ __all__ = [
     "update_expense",
     "mark_expense_paid",
     "delete_expense",
+    "generate_payment_url",
 ]
