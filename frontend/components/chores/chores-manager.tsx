@@ -257,13 +257,17 @@ export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
       {/* Add Chore Button */}
       {activeTab === 'chores' && (
         <TouchableOpacity
-          style={styles.fab}
+          style={styles.addChoreButton}
           onPress={() => {
             setEditingChore(null);
             setIsChoreFormVisible(true);
           }}
+          activeOpacity={0.8}
         >
-          <IconSymbol name="plus" size={24} color="#FFFFFF" />
+          <View style={styles.addChoreButtonContent}>
+            <IconSymbol name="plus.circle.fill" size={22} color="#000000" />
+            <Text style={styles.addChoreButtonText}>Add Chore</Text>
+          </View>
         </TouchableOpacity>
       )}
 
@@ -360,22 +364,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 300,
   },
-  fab: {
+  addChoreButton: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#1E3A8A',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#FFC125',
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     shadowColor: '#FFC125',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 10,
     borderWidth: 2,
-    borderColor: '#FFC125',
+    borderColor: '#D4AF37',
+  },
+  addChoreButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  addChoreButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+    letterSpacing: 0.5,
   },
 });
