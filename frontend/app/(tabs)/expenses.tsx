@@ -19,22 +19,48 @@ import {
   getExpenseSplits,
   generatePaymentURL,
   markExpensePaid,
+  createExpense,
+  updateExpense,
+  deleteExpense,
+  getCurrentHousehold,
   type Expense,
   type ExpenseSplit,
 } from '@/lib/graphql-client';
+import EmptyState from '@/components/expenses/EmptyState';
+import TabsView from '@/components/expenses/TabsView';
+import IOweCard from '@/components/expenses/IOweCard';
+import OwedToMeCard from '@/components/expenses/OwedToMeCard';
+import ExpenseModal from '@/components/expenses/ExpenseModal';
 
 interface ExpenseWithSplits extends Expense {
   splits?: ExpenseSplit[];
   paidByName?: string;
+  payeePaymentMethod?: string; // Preferred payment method of person who paid
 }
 
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [expenses, setExpenses] = useState<ExpenseWithSplits[]>([]);
+  const [myCreatedExpenses, setMyCreatedExpenses] = useState<ExpenseWithSplits[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'owe' | 'owed'>('owe'); // Toggle between views
+  const [householdId, setHouseholdId] = useState<string | null>(null);
+  const [roommates, setRoommates] = useState<any[]>([]);
+  
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState<string>('other');
+  const [selectedRoommates, setSelectedRoommates] = useState<string[]>([]);
+  const [creating, setCreating] = useState(false);
+  
+  // Edit state
+  const [editingExpense, setEditingExpense] = useState<ExpenseWithSplits | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -45,6 +71,7 @@ export default function ExpensesScreen() {
       }
       setUserId(session.user.id);
       setIsCheckingAuth(false);
+      await loadHouseholdData();
       await loadExpenses();
     };
 
@@ -60,32 +87,85 @@ export default function ExpensesScreen() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const loadHouseholdData = async () => {
+    try {
+      const household = await getCurrentHousehold();
+      if (household && household.id) {
+        setHouseholdId(household.id);
+        
+        // Get roommates from household
+        if (household.roommates) {
+          setRoommates(household.roommates.map((r: any) => ({
+            id: r.userId,
+            name: r.profile?.fullName || 'Unknown',
+          })));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading household:', error);
+    }
+  };
+
   const loadExpenses = async () => {
     try {
       setLoading(true);
       const myExpenses = await getMyExpenses();
       
-      // Load splits and payer info for each expense
-      const expensesWithDetails = await Promise.all(
-        myExpenses.map(async (expense) => {
+      // Separate expenses into ones I owe vs ones I created
+      const expensesIOwe = myExpenses.filter(expense => expense.paidBy !== userId);
+      const expensesICreated = myExpenses.filter(expense => expense.paidBy === userId);
+      
+      // Load splits and payer info for expenses I owe
+      const oweExpensesWithDetails = await Promise.all(
+        expensesIOwe.map(async (expense) => {
           const splits = await getExpenseSplits(expense.id);
           
-          // Get payer name
+          // Get payer name and payment method
           const { data: payerData } = await supabase
             .from('profiles')
-            .select('full_name')
+            .select('full_name, preferred_payment_method, venmo_handle, paypal_email, cashapp_handle, zelle_email')
             .eq('id', expense.paidBy)
             .single();
+          
+          // Determine which payment method to show
+          let paymentMethod = null;
+          if (payerData) {
+            const payer = payerData as any;
+            paymentMethod = payer.preferred_payment_method;
+            
+            // Fallback to first available method if preferred not set
+            if (!paymentMethod) {
+              if (payer.venmo_handle) paymentMethod = 'venmo';
+              else if (payer.paypal_email) paymentMethod = 'paypal';
+              else if (payer.cashapp_handle) paymentMethod = 'cashapp';
+              else if (payer.zelle_email) paymentMethod = 'zelle';
+            }
+          }
           
           return {
             ...expense,
             splits,
             paidByName: (payerData as any)?.full_name || 'Unknown',
+            payeePaymentMethod: paymentMethod,
           };
         })
       );
       
-      setExpenses(expensesWithDetails);
+      // Load splits for expenses I created
+      const createdExpensesWithDetails = await Promise.all(
+        expensesICreated.map(async (expense) => {
+          const splits = await getExpenseSplits(expense.id);
+          return {
+            ...expense,
+            splits,
+            paidByName: 'You',
+            payeePaymentMethod: undefined,
+          };
+        })
+      );
+      
+      setExpenses(oweExpensesWithDetails);
+      setMyCreatedExpenses(createdExpensesWithDetails);
     } catch (error) {
       console.error('Error loading expenses:', error);
       Alert.alert('Error', 'Failed to load expenses');
@@ -159,6 +239,149 @@ export default function ExpensesScreen() {
     }
   };
 
+  const handleCreateExpense = async () => {
+    if (!title.trim()) {
+      Alert.alert('Error', 'Please enter a title');
+      return;
+    }
+    if (!amount || parseFloat(amount) <= 0) {
+      Alert.alert('Error', 'Please enter a valid amount');
+      return;
+    }
+    if (selectedRoommates.length === 0) {
+      Alert.alert('Error', 'Please select at least one person to split with');
+      return;
+    }
+    if (!householdId) {
+      Alert.alert('Error', 'No household found');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await createExpense({
+        householdId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        amount: parseFloat(amount),
+        currency: 'USD',
+        category: category as any,
+        splitWith: selectedRoommates,
+      });
+
+      // Reset form
+      setTitle('');
+      setDescription('');
+      setAmount('');
+      setCategory('other');
+      setSelectedRoommates([]);
+      setShowCreateModal(false);
+
+      // Reload expenses
+      await loadExpenses();
+      Alert.alert('Success', 'Expense created and split among roommates!');
+    } catch (error: any) {
+      console.error('Error creating expense:', error);
+      Alert.alert('Error', error.message || 'Failed to create expense');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    Alert.alert(
+      'Delete Expense',
+      'Are you sure you want to delete this expense? This will remove it for everyone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteExpense(expenseId);
+              await loadExpenses();
+              Alert.alert('Success', 'Expense deleted');
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to delete expense');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEditExpense = (expense: ExpenseWithSplits) => {
+    setEditingExpense(expense);
+    setTitle(expense.title || '');
+    setDescription(expense.description || '');
+    setAmount(expense.amount?.toString() || '');
+    setCategory(expense.category || 'other');
+    
+    // Load the splits
+    if (expense.splits) {
+      setSelectedRoommates(expense.splits.map(s => s.userId!));
+    }
+    
+    setShowCreateModal(true);
+  };
+
+  const handleUpdateExpense = async () => {
+    if (!editingExpense) return;
+    
+    if (!title.trim()) {
+      Alert.alert('Error', 'Please enter a title');
+      return;
+    }
+    if (!amount || parseFloat(amount) <= 0) {
+      Alert.alert('Error', 'Please enter a valid amount');
+      return;
+    }
+
+    setCreating(true);
+    try {
+      await updateExpense(editingExpense.id, {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        amount: parseFloat(amount),
+        category: category as any,
+      });
+
+      // TODO: Update splits if changed
+      // For now, updating expense metadata only
+
+      // Reset form
+      resetForm();
+      
+      // Reload expenses
+      await loadExpenses();
+      Alert.alert('Success', 'Expense updated!');
+    } catch (error: any) {
+      console.error('Error updating expense:', error);
+      Alert.alert('Error', error.message || 'Failed to update expense');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setAmount('');
+    setCategory('other');
+    setSelectedRoommates([]);
+    setEditingExpense(null);
+    setShowCreateModal(false);
+  };
+
+  const toggleRoommate = (roommateId: string) => {
+    if (selectedRoommates.includes(roommateId)) {
+      setSelectedRoommates(selectedRoommates.filter(id => id !== roommateId));
+    } else {
+      setSelectedRoommates([...selectedRoommates, roommateId]);
+    }
+  };
+
   const handleMarkAsPaid = async (split: ExpenseSplit) => {
     Alert.alert(
       'Mark as Paid',
@@ -201,98 +424,95 @@ export default function ExpensesScreen() {
         }
       >
         <View style={styles.header}>
-          <ThemedText style={styles.title}>Expenses</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Your pending expenses and payments
-          </ThemedText>
+          <View style={styles.headerTop}>
+            <View>
+              <ThemedText style={styles.title}>Expenses</ThemedText>
+            </View>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => {
+                setSelectedRoommates([]);
+                setShowCreateModal(true);
+              }}
+            >
+              <ThemedText style={styles.addButtonText}>+ Add</ThemedText>
+            </TouchableOpacity>
+          </View>
+          
+          {/* View Toggle Tabs */}
+          <TabsView
+            viewMode={viewMode}
+            oweCount={expenses.length}
+            owedCount={myCreatedExpenses.length}
+            onViewModeChange={setViewMode}
+          />
         </View>
 
-        {loading && expenses.length === 0 ? (
+        {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFC125" />
           </View>
-        ) : expenses.length === 0 ? (
-          <View style={styles.emptyState}>
-            <ThemedText style={styles.emptyText}>No expenses yet</ThemedText>
-            <ThemedText style={styles.emptySubtext}>
-              Expenses you owe will appear here
-            </ThemedText>
-          </View>
+        ) : viewMode === 'owe' ? (
+          expenses.length === 0 ? (
+            <EmptyState
+              title="All paid up! 🎉"
+              subtitle="You don't owe anyone money right now"
+            />
+          ) : (
+            <View style={styles.expensesList}>
+              {expenses.map((expense) => (
+                <IOweCard
+                  key={expense.id}
+                  expense={expense}
+                  userId={userId}
+                  onPay={handlePayExpense}
+                  onMarkAsPaid={handleMarkAsPaid}
+                />
+              ))}
+            </View>
+          )
         ) : (
-          <View style={styles.expensesList}>
-            {expenses.map((expense) => {
-              const mySplit = expense.splits?.find((s) => s.userId === userId);
-              if (!mySplit) return null;
-
-              return (
-                <View key={expense.id} style={styles.expenseCard}>
-                  <View style={styles.expenseHeader}>
-                    <View style={styles.expenseInfo}>
-                      <ThemedText style={styles.expenseTitle}>{expense.title}</ThemedText>
-                      {expense.description && (
-                        <ThemedText style={styles.expenseDescription}>
-                          {expense.description}
-                        </ThemedText>
-                      )}
-                      <ThemedText style={styles.expensePayee}>
-                        Paid by: {expense.paidByName}
-                      </ThemedText>
-                    </View>
-                    <View style={styles.amountContainer}>
-                      <ThemedText style={styles.expenseAmount}>
-                        ${mySplit.amount.toFixed(2)}
-                      </ThemedText>
-                      <ThemedText style={styles.currency}>{expense.currency}</ThemedText>
-                    </View>
-                  </View>
-
-                  {expense.category && (
-                    <View style={styles.categoryBadge}>
-                      <ThemedText style={styles.categoryText}>{expense.category}</ThemedText>
-                    </View>
-                  )}
-
-                  {expense.dueDate && (
-                    <ThemedText style={styles.dueDate}>
-                      Due: {new Date(expense.dueDate).toLocaleDateString()}
-                    </ThemedText>
-                  )}
-
-                  <View style={styles.expenseActions}>
-                    {mySplit.isPaid ? (
-                      <View style={styles.paidBadge}>
-                        <ThemedText style={styles.paidText}>✓ Paid</ThemedText>
-                        {mySplit.paidAt && (
-                          <ThemedText style={styles.paidDate}>
-                            {new Date(mySplit.paidAt).toLocaleDateString()}
-                          </ThemedText>
-                        )}
-                      </View>
-                    ) : (
-                      <>
-                        <TouchableOpacity
-                          style={styles.payButton}
-                          onPress={() => handlePayExpense(mySplit)}
-                        >
-                          <ThemedText style={styles.payButtonText}>
-                            💳 Pay with {mySplit.paymentMethod || 'App'}
-                          </ThemedText>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.markPaidButton}
-                          onPress={() => handleMarkAsPaid(mySplit)}
-                        >
-                          <ThemedText style={styles.markPaidButtonText}>Mark as Paid</ThemedText>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+          myCreatedExpenses.length === 0 ? (
+            <EmptyState
+              title="No expenses yet"
+              subtitle="Create an expense to track who owes you"
+            />
+          ) : (
+            <View style={styles.expensesList}>
+              {myCreatedExpenses.map((expense) => (
+                <OwedToMeCard
+                  key={expense.id}
+                  expense={expense}
+                  roommates={roommates}
+                  onEdit={() => handleEditExpense(expense)}
+                  onDelete={() => handleDeleteExpense(expense.id)}
+                />
+              ))}
+            </View>
+          )
         )}
       </ScrollView>
+
+      {/* Create/Edit Expense Modal */}
+      <ExpenseModal
+        visible={showCreateModal}
+        isEditing={!!editingExpense}
+        title={title}
+        description={description}
+        amount={amount}
+        category={category}
+        selectedRoommates={selectedRoommates}
+        roommates={roommates}
+        userId={userId}
+        creating={creating}
+        onClose={resetForm}
+        onTitleChange={setTitle}
+        onDescriptionChange={setDescription}
+        onAmountChange={setAmount}
+        onCategoryChange={setCategory}
+        onRoommateToggle={toggleRoommate}
+        onSubmit={editingExpense ? handleUpdateExpense : handleCreateExpense}
+      />
     </LinearGradient>
   );
 }
@@ -314,148 +534,32 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 10,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#FFC125',
     marginBottom: 8,
   },
-  subtitle: {
+  addButton: {
+    backgroundColor: '#FFC125',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  addButtonText: {
+    color: '#000',
     fontSize: 16,
-    color: '#D4AF37',
-  },
-  emptyState: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#FFC125',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
+    fontWeight: 'bold',
   },
   expensesList: {
     padding: 20,
     paddingTop: 10,
-  },
-  expenseCard: {
-    backgroundColor: '#1A1A1A',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  expenseHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  expenseInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  expenseTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFC125',
-    marginBottom: 4,
-  },
-  expenseDescription: {
-    fontSize: 14,
-    color: '#999',
-    marginBottom: 6,
-  },
-  expensePayee: {
-    fontSize: 12,
-    color: '#666',
-  },
-  amountContainer: {
-    alignItems: 'flex-end',
-  },
-  expenseAmount: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFC125',
-  },
-  currency: {
-    fontSize: 12,
-    color: '#999',
-  },
-  categoryBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#2A2A2A',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  categoryText: {
-    fontSize: 12,
-    color: '#FFC125',
-    textTransform: 'capitalize',
-  },
-  dueDate: {
-    fontSize: 12,
-    color: '#FF6B6B',
-    marginBottom: 12,
-  },
-  expenseActions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 8,
-  },
-  payButton: {
-    flex: 1,
-    backgroundColor: '#FFC125',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  payButtonText: {
-    color: '#000',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  markPaidButton: {
-    flex: 1,
-    backgroundColor: '#2A2A2A',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FFC125',
-  },
-  markPaidButtonText: {
-    color: '#FFC125',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  paidBadge: {
-    flex: 1,
-    backgroundColor: '#1B5E20',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  paidText: {
-    color: '#4CAF50',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  paidDate: {
-    color: '#81C784',
-    fontSize: 12,
-    marginTop: 2,
   },
 });
 
