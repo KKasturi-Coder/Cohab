@@ -50,7 +50,7 @@ export async function graphqlRequest<T = any>(
     if (error.message === 'Network request failed') {
       const helpMessage = Platform.OS === 'android' 
         ? 'Network error. If using Android emulator, make sure backend is accessible at 10.0.2.2:8000. For physical device, set EXPO_PUBLIC_GRAPHQL_URL to your computer\'s IP address.'
-        : 'Network error. Make sure the backend is running at http://localhost:8000';
+        : `Network error. Make sure the backend is running at ${GRAPHQL_ENDPOINT}`;
       
       throw new Error(helpMessage);
     }

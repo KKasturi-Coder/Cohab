@@ -12,12 +12,14 @@
       "supportsTablet": true,
       "infoPlist": {
         "LSApplicationQueriesSchemes": [
+          "zelle",
           "venmo",
           "paypal",
           "cashapp",
           "zelle"
         ]
-      }
+      },
+      "bundleIdentifier": "com.anonymous.cohab"
     },
     "android": {
       "adaptiveIcon": {
@@ -54,7 +56,10 @@
               "host": "www.zellepay.com"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
