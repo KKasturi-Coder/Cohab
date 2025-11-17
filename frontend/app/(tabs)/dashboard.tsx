@@ -7,12 +7,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import { ChoreAssignmentItem } from '@/components/chores/chore-assignment-item';
 
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
+  const insets = useSafeAreaInsets();
   const [userName, setUserName] = useState('User');
   const [currentDate, setCurrentDate] = useState('');
   const [houseInfo, setHouseInfo] = useState<any>(null);
@@ -140,7 +142,7 @@ export default function DashboardScreen() {
       >
         {/* Sticky Header */}
         <View style={styles.stickyHeader}>
-          <View style={styles.header}>
+          <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
             <TouchableOpacity style={styles.headerButton}>
               <IconSymbol name="gearshape.fill" size={24} color="#FFC125" />
             </TouchableOpacity>
@@ -316,7 +318,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 60,
     paddingBottom: 24,
   },
   headerButton: {

@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chore, ChoreAssignment, Roommate } from '@/lib/graphql/types';
 import { getHouseholdChores, getHouseholdChoreAssignments } from '@/lib/graphql/queries/chores';
 import {
@@ -34,6 +35,7 @@ interface ChoresManagerProps {
 type TabType = 'chores' | 'assignments';
 
 export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
+  const insets = useSafeAreaInsets();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('assignments');
   const [chores, setChores] = useState<Chore[]>([]);
@@ -157,7 +159,7 @@ export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
   return (
     <View style={styles.container}>
       {/* Tabs */}
-      <View style={styles.tabs}>
+      <View style={[styles.tabs, { paddingTop: insets.top }]}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'assignments' && styles.tabActive]}
           onPress={() => setActiveTab('assignments')}

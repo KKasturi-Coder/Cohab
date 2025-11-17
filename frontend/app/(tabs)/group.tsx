@@ -11,6 +11,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,6 +23,7 @@ import { Household } from '@/lib/graphql/types';
 import { supabase } from '@/lib/supabase';
 
 export default function GroupScreen() {
+  const insets = useSafeAreaInsets();
   const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -178,7 +180,7 @@ export default function GroupScreen() {
 
   return (
     <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: insets.top }}>
         {/* Household Info Section */}
         <View style={styles.section}>
           <View style={styles.infoCard}>

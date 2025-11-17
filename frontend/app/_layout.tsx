@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -41,8 +42,9 @@ export default function RootLayout() {
   const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
 
   return (
-    <ThemeProvider value={theme}>
-      <Stack screenOptions={{ headerBackTitle: '' }}>
+    <SafeAreaProvider>
+      <ThemeProvider value={theme}>
+        <Stack screenOptions={{ headerBackTitle: '' }}>
         <Stack.Screen 
           name="index" 
           options={{ 
@@ -89,8 +91,9 @@ export default function RootLayout() {
           }} 
         />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }

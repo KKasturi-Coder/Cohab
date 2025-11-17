@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@/components/themed-text';
 import { supabase } from '@/lib/supabase';
 
 export default function ExpensesScreen() {
+  const insets = useSafeAreaInsets();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function ExpensesScreen() {
 
   return (
     <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingTop: insets.top + 20 }]}>
         <ThemedText style={styles.title}>Expenses</ThemedText>
         <ThemedText style={styles.placeholder}>
           Expenses feature coming soon...

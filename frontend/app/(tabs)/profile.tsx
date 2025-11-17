@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, ScrollView, StyleSheet, TouchableOpacity, View, TextInput } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
 import Animated, { FadeInDown, FadeInUp, useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 import { updateProfile } from '@/lib/graphql-client';
@@ -12,6 +13,7 @@ import { updateProfile } from '@/lib/graphql-client';
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
   const [userBio, setUserBio] = useState('');
@@ -155,7 +157,7 @@ export default function ProfileScreen() {
     <LinearGradient colors={['#000000', '#1A1A1A']} style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <Animated.View entering={FadeInUp.delay(100).duration(600)} style={styles.header}>
+        <Animated.View entering={FadeInUp.delay(100).duration(600)} style={[styles.header, { paddingTop: insets.top + 20 }]}>
           <ThemedText type="title" style={styles.headerTitle}>Profile</ThemedText>
         </Animated.View>
 
