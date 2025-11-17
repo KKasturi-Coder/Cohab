@@ -90,9 +90,9 @@ export default function AssignmentsScreen() {
     loadData();
   }, [loadData]);
 
-  const handleComplete = async (assignmentId: string) => {
+  const handleComplete = async (assignmentId: string, proofUrl?: string) => {
     try {
-      await completeChoreAssignment({ assignmentId });
+      await completeChoreAssignment({ assignmentId, proofUrl });
       Alert.alert('Success', 'Chore completed! 🎉');
       loadData();
     } catch (error) {

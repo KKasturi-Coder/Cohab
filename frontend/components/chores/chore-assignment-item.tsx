@@ -9,10 +9,12 @@ import {
 } from 'react-native';
 import { ChoreAssignment } from '@/lib/graphql/types';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '@/lib/supabase';
 
 interface ChoreAssignmentItemProps {
   assignment: ChoreAssignment;
-  onComplete: (assignmentId: string) => void;
+  onComplete: (assignmentId: string, proofUrl?: string) => void;
   onDelete: (assignmentId: string) => void;
   isOwnAssignment: boolean;
 }
@@ -23,6 +25,56 @@ export function ChoreAssignmentItem({
   onDelete,
   isOwnAssignment,
 }: ChoreAssignmentItemProps) {
+  const uploadProofAndComplete = async () => {
+    // Request camera permission
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Camera permission is needed to take photo proof.');
+      return;
+    }
+
+    // Launch camera to capture photo
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (result.canceled || !result.assets || result.assets.length === 0) {
+      return;
+    }
+
+    const asset = result.assets[0];
+
+    try {
+      const fileExt = asset.uri.split('.').pop() || 'jpg';
+      const filePath = `proof/${assignment.id}-${Date.now()}.${fileExt}`;
+
+      // Convert file URI to ArrayBuffer and upload to Supabase
+      const response = await fetch(asset.uri);
+      const arrayBuffer = await response.arrayBuffer();
+
+      const { error } = await supabase.storage.from('chore-proof').upload(filePath, arrayBuffer, {
+        contentType: asset.mimeType || 'image/jpeg',
+        upsert: true,
+      });
+
+      if (error) {
+        Alert.alert('Upload failed', error.message);
+        return;
+      }
+
+      // Get a public URL for the uploaded proof image
+      const { data } = supabase.storage.from('chore-proof').getPublicUrl(filePath);
+      const proofUrl = data.publicUrl;
+
+      onComplete(assignment.id, proofUrl);
+    } catch (e) {
+      console.error('Error uploading proof:', e);
+      Alert.alert('Error', 'Failed to upload photo proof. Please try again.');
+    }
+  };
+
   const handleComplete = () => {
     if (assignment.chore.requiresProof) {
       Alert.alert(
@@ -31,12 +83,10 @@ export function ChoreAssignmentItem({
         [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'Upload Photo',
+            text: 'Take Photo',
             onPress: () => {
-              // For now, just mark as complete without proof
-              // In a real app, you'd open image picker here
-              Alert.alert('Info', 'Photo upload feature coming soon. Marking as complete anyway.');
-              onComplete(assignment.id);
+              // Start camera + upload flow
+              uploadProofAndComplete();
             },
           },
         ]

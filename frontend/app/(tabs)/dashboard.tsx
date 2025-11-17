@@ -115,9 +115,9 @@ export default function DashboardScreen() {
     return () => subscription.unsubscribe();
   }, [loadDashboardData]);
 
-  const handleCompleteChore = async (assignmentId: string) => {
+  const handleCompleteChore = async (assignmentId: string, proofUrl?: string) => {
     try {
-      await completeChoreAssignment({ assignmentId });
+      await completeChoreAssignment({ assignmentId, proofUrl });
       Alert.alert('Success', 'Chore completed! 🎉');
       await loadDashboardData();
     } catch (error) {

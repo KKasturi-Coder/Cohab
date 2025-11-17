@@ -123,9 +123,9 @@ export function ChoresManager({ householdId, roommates }: ChoresManagerProps) {
     loadData();
   };
 
-  const handleCompleteAssignment = async (assignmentId: string) => {
+  const handleCompleteAssignment = async (assignmentId: string, proofUrl?: string) => {
     try {
-      await completeChoreAssignment({ assignmentId });
+      await completeChoreAssignment({ assignmentId, proofUrl });
       Alert.alert('Success', 'Chore completed! 🎉');
       loadData();
     } catch (error) {

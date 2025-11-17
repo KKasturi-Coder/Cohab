@@ -207,6 +207,23 @@ export default function GroupScreen() {
           </View>
         </View>
 
+        {/* Activity Feed CTA */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.activityButton}
+            onPress={() => router.push('/group-activity')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.activityButtonContent}>
+              <IconSymbol name="clock.arrow.circlepath" size={20} color="#000000" />
+              <Text style={styles.activityButtonText}>View Activity Feed</Text>
+            </View>
+            <Text style={styles.activityButtonHint}>
+              See recent joins, leaves, and chore updates for your household
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Invite Code Section */}
         <View style={styles.section}>
           <TouchableOpacity onPress={copyInviteCode} style={styles.inviteCodeCard}>
@@ -466,6 +483,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#D4AF37',
     opacity: 0.9,
+  },
+  activityButton: {
+    backgroundColor: '#FFC125',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.4)',
+  },
+  activityButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  activityButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  activityButtonHint: {
+    fontSize: 12,
+    color: '#4A3200',
+    textAlign: 'center',
   },
   roommatesList: {
     gap: 12,
