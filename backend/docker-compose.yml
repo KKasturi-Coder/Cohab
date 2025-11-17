@@ -1,5 +1,5 @@
 services:
-  api:
+  cohab-api:
     build: 
       context: .
       dockerfile: Dockerfile

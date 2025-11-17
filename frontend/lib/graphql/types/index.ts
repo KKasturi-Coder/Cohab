@@ -58,6 +58,11 @@ export interface UpdateProfileInput {
   fullName?: string;
   avatarUrl?: string;
   bio?: string;
+  venmoHandle?: string;
+  paypalEmail?: string;
+  cashappHandle?: string;
+  zelleEmail?: string;
+  preferredPaymentMethod?: 'venmo' | 'paypal' | 'cashapp' | 'zelle';
 }
 
 export interface Profile {
@@ -65,6 +70,11 @@ export interface Profile {
   fullName?: string;
   avatarUrl?: string;
   bio?: string;
+  venmoHandle?: string;
+  paypalEmail?: string;
+  cashappHandle?: string;
+  zelleEmail?: string;
+  preferredPaymentMethod?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -121,4 +131,65 @@ export interface ChoreAssignment {
   completedAt?: string;
   proofUrl?: string;
   createdAt: string;
+}
+
+// ==================== EXPENSE TYPES ====================
+
+export interface CreateExpenseInput {
+  householdId: string;
+  title: string;
+  description?: string;
+  amount: number;
+  currency?: string;
+  category?: 'rent' | 'utilities' | 'groceries' | 'cleaning' | 'maintenance' | 'other';
+  dueDate?: string;
+  splitWith: string[]; // Array of user IDs
+}
+
+export interface UpdateExpenseInput {
+  title?: string;
+  description?: string;
+  amount?: number;
+  currency?: string;
+  category?: 'rent' | 'utilities' | 'groceries' | 'cleaning' | 'maintenance' | 'other';
+  dueDate?: string;
+}
+
+export interface MarkExpensePaidInput {
+  expenseSplitId: string;
+}
+
+export interface GeneratePaymentURLInput {
+  expenseSplitId: string;
+  paymentMethod?: 'venmo' | 'paypal' | 'cashapp' | 'zelle';
+}
+
+export interface Expense {
+  id: string;
+  householdId: string;
+  title: string;
+  description?: string;
+  amount: number;
+  currency: string;
+  category?: string;
+  paidBy: string;
+  createdAt: string;
+  dueDate?: string;
+}
+
+export interface ExpenseSplit {
+  id: string;
+  expenseId: string;
+  userId: string;
+  amount: number;
+  isPaid: boolean;
+  paidAt?: string;
+  paymentUrl?: string;
+  paymentMethod?: string;
+}
+
+export interface PaymentURLResult {
+  paymentUrl: string;
+  paymentMethod: string;
+  availableMethods: string[];
 }

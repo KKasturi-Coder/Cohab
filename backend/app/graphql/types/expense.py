@@ -30,3 +30,5 @@ class ExpenseSplit:
     amount: Optional[float] = None
     is_paid: Optional[bool] = None
     paid_at: Optional[datetime] = None
+    payment_url: Optional[str] = None
+    payment_method: Optional[str] = None

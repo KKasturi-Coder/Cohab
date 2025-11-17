@@ -27,6 +27,18 @@ async def update_profile(
     if input.bio is not None:
         update_data["bio"] = input.bio
     
+    # Payment fields
+    if input.venmo_handle is not None:
+        update_data["venmo_handle"] = input.venmo_handle
+    if input.paypal_email is not None:
+        update_data["paypal_email"] = input.paypal_email
+    if input.cashapp_handle is not None:
+        update_data["cashapp_handle"] = input.cashapp_handle
+    if input.zelle_email is not None:
+        update_data["zelle_email"] = input.zelle_email
+    if input.preferred_payment_method is not None:
+        update_data["preferred_payment_method"] = input.preferred_payment_method
+    
     if not update_data:
         raise Exception("No fields to update")
     
