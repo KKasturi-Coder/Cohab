@@ -15,6 +15,8 @@ class Expense:
     amount: Optional[float] = None
     currency: Optional[str] = None
     category: Optional[str] = None
+    payment_url: Optional[str] = None
+    payment_method: Optional[str] = None
     paid_by: Optional[str] = None
     created_at: Optional[datetime] = None
     due_date: Optional[datetime] = None
